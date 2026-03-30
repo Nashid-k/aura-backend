@@ -33,9 +33,14 @@ function getWeeklyTarget(habit) {
 
 function getCompletionMap(logs) {
   return logs.reduce((map, log) => {
+    // Adaptive Engine Logic: 'partial' counts as completed. 'paused' completely freezes the streak without penalty.
+    const isCompleted = Boolean(log.completed) || log.status === 'completed' || log.status === 'partial';
+    const isSkipped = Boolean(log.skipped) || log.status === 'skipped' || log.status === 'paused';
+
     map[log.date] = {
-      completed: Boolean(log.completed),
-      skipped: Boolean(log.skipped),
+      completed: isCompleted,
+      skipped: isSkipped,
+      status: log.status || 'none',
     };
     return map;
   }, {});

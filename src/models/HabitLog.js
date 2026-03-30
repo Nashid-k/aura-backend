@@ -40,6 +40,11 @@ const habitLogSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    status: {
+      type: String,
+      enum: ['none', 'completed', 'skipped', 'partial', 'paused'],
+      default: 'none',
+    },
   },
   { timestamps: true }
 );

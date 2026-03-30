@@ -19,6 +19,7 @@ router.post('/', async (request, response) => {
       date,
       completed: Boolean(completed) && !Boolean(skipped),
       skipped: Boolean(skipped),
+      status: request.body.status || (completed && !skipped ? 'completed' : skipped ? 'skipped' : 'none'),
       note: note || '',
       value: value || 1,
       progress: typeof progress === 'number' ? progress : 0,
@@ -48,6 +49,19 @@ router.post('/', async (request, response) => {
     });
 
     newBadges = await checkAndAward(userId, habitStats);
+
+    const triggerScaling = habitStats.filter(h => 
+      h.autoScaling?.enabled && 
+      !h.autoScaling?.suggestedIncrease && 
+      h.streak.current >= (h.autoScaling?.continuousDaysThreshold || 14)
+    );
+    
+    if (triggerScaling.length > 0) {
+      await Habit.updateMany(
+        { _id: { $in: triggerScaling.map(h => h._id) } }, 
+        { $set: { 'autoScaling.suggestedIncrease': true } }
+      );
+    }
   } catch (err) {
     console.error('Badge check error:', err.message);
   }

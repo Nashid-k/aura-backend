@@ -81,6 +81,15 @@ const habitSchema = new mongoose.Schema(
       type: frequencySchema,
       default: () => ({ mode: 'daily', targetCount: 7, daysOfWeek: [] }),
     },
+    vacationMode: {
+      active: { type: Boolean, default: false },
+      until: { type: Date, default: null },
+    },
+    autoScaling: {
+      enabled: { type: Boolean, default: true },
+      continuousDaysThreshold: { type: Number, default: 14 },
+      suggestedIncrease: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );
