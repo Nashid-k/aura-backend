@@ -14,6 +14,7 @@ const templateRoutes = require('./routes/templateRoutes');
 const moodRoutes = require('./routes/moodRoutes');
 const journalRoutes = require('./routes/journalRoutes');
 const { authMiddleware } = require('./middleware/auth');
+const { startAIWorker } = require('./workers/aiWorker');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -52,6 +53,7 @@ app.use((error, _request, response, _next) => {
 
 async function startServer() {
   await connectDB(MONGODB_URI);
+  startAIWorker();
 
   app.listen(PORT, () => {
     console.log(`Habit tracker API listening on port ${PORT}`);

@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    aiNudgeCache: {
+      text: { type: String, default: '' },
+      date: { type: String, default: '' },
+    },
   },
   { timestamps: true }
 );
