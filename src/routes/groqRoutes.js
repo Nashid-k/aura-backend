@@ -7,6 +7,7 @@ const { buildHabitStats } = require('../utils/stats');
 const { buildSystemPrompt, buildNudgePrompt } = require('../utils/aiUtils');
 const { buildInsights } = require('../utils/insights');
 const { toDateKey } = require('../utils/date');
+const { cacheDel } = require('../utils/redis');
 
 const router = express.Router();
 
@@ -181,10 +182,15 @@ async function executeActions(text, userId) {
         existing.completed = false;
         await existing.save();
       }
-      actions.push({ type: 'habit_skipped', label: `Skipped "${habit.title}" today ⏭️` });
+      actions.push({ type: 'habit_skipped', label: `Skipped "${habit.title}" for today ⏭️` });
     } catch (err) {
       console.error('AI skip habit error:', err.message);
     }
+  }
+
+  // Invalidate cache if any actions were successfully processed
+  if (actions.length > 0) {
+    await cacheDel(`habitContext:${userId}`);
   }
 
   // Clean ALL action tags from the displayed message

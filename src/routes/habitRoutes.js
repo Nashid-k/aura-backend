@@ -7,6 +7,7 @@ const {
   getHabitWeeklySeries,
 } = require('../utils/stats');
 const { toDateKey } = require('../utils/date');
+const { cacheGet, cacheSet, cacheDel } = require('../utils/redis');
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.get('/', async (request, response) => {
 
 router.post('/', async (request, response) => {
   const habit = await Habit.create({ ...request.body, user: request.user._id });
+  await cacheDel(`dashboard:${request.user._id}`);
   response.status(201).json(habit);
 });
 
@@ -34,6 +36,7 @@ router.patch('/:id', async (request, response) => {
     return response.status(404).json({ message: 'Habit not found.' });
   }
 
+  await cacheDel(`dashboard:${request.user._id}`);
   return response.json(habit);
 });
 
@@ -45,6 +48,7 @@ router.delete('/:id', async (request, response) => {
     return response.status(404).json({ message: 'Habit not found.' });
   }
 
+  await cacheDel(`dashboard:${request.user._id}`);
   return response.status(204).send();
 });
 

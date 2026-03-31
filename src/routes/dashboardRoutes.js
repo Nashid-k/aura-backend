@@ -9,10 +9,15 @@ const {
   sortLeaderboard,
 } = require('../utils/stats');
 const { toDateKey } = require('../utils/date');
+const { cacheGet, cacheSet } = require('../utils/redis');
 
 const router = express.Router();
 
 router.get('/', async (request, response) => {
+  const cacheKey = `dashboard:${request.user._id}`;
+  const cachedData = await cacheGet(cacheKey);
+  if (cachedData) return response.json(cachedData);
+
   const habits = await Habit.find({ user: request.user._id, archived: false })
     .sort({ createdAt: -1 })
     .lean();
@@ -39,9 +44,7 @@ router.get('/', async (request, response) => {
   const weeklyCompletion = habitCards.length
     ? Math.round(habitCards.reduce((sum, habit) => sum + habit.weekly.percentage, 0) / habitCards.length)
     : 0;
-  const strongestHabit = leaderboard[0] || null;
-
-  response.json({
+  const dashboardData = {
     summary: {
       completedToday,
       totalHabits: habitCards.length,
@@ -61,7 +64,10 @@ router.get('/', async (request, response) => {
         title: habit.title,
         note: habit.recentNote,
       })),
-  });
+  };
+
+  await cacheSet(cacheKey, dashboardData, 300); // 5 minute cache
+  response.json(dashboardData);
 });
 
 module.exports = router;

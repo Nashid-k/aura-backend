@@ -4,8 +4,14 @@ const MoodLog = require('../models/MoodLog');
 const { buildHabitStats } = require('./stats');
 const { buildInsights } = require('./insights');
 const { toDateKey } = require('./date');
+const { cacheGet, cacheSet } = require('./redis');
 
 async function getHabitContext(userId) {
+  // Check cache first
+  const cacheKey = `habitContext:${userId}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) return cached;
+
   const habits = await Habit.find({ user: userId, archived: false })
     .sort({ createdAt: -1 })
     .lean();
@@ -50,7 +56,12 @@ async function getHabitContext(userId) {
     ? `User's mood today: ${['😫','😐','😊','😄','🔥'][todayMood.mood - 1]} (${todayMood.mood}/5), energy: ${todayMood.energy}/5`
     : 'No mood logged today.';
 
-  return { habitCards, logs, summary, insights, moodContext };
+  const context = { habitCards, logs, summary, insights, moodContext };
+  
+  // Cache for 5 minutes
+  await cacheSet(cacheKey, context, 300);
+
+  return context;
 }
 
 module.exports = { getHabitContext };

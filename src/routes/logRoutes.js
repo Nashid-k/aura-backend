@@ -4,6 +4,7 @@ const Habit = require('../models/Habit');
 const { buildHabitStats } = require('../utils/stats');
 const { checkAndAward } = require('../utils/achievementService');
 const { toDateKey } = require('../utils/date');
+const { cacheDel } = require('../utils/redis');
 
 const router = express.Router();
 
@@ -65,6 +66,10 @@ router.post('/', async (request, response) => {
   } catch (err) {
     console.error('Badge check error:', err.message);
   }
+
+  // Invalidate cache
+  await cacheDel(`dashboard:${userId}`);
+  await cacheDel(`habitContext:${userId}`);
 
   response.status(201).json({ log, newBadges });
 });
