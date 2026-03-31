@@ -21,7 +21,7 @@ async function executeActions(text, userId) {
   const actions = [];
 
   // CREATE
-  const createPattern = /\[\[ACTION:add_habit\|([^|]+)\|([^|]*)\|([^|]*)\|?([^\]]*)\]\]/gi;
+  const createPattern = /\[\[ACTION:add_habit\s*\|\s*([^|]+)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|\s*?([^\]]*)\]\]/gi;
   let match;
   while ((match = createPattern.exec(text)) !== null) {
     const title = match[1].trim();
@@ -46,7 +46,7 @@ async function executeActions(text, userId) {
   }
 
   // UPDATE
-  const updatePattern = /\[\[ACTION:update_habit\|([^|]+)\|([^|]+)\|([^\]]+)\]\]/gi;
+  const updatePattern = /\[\[ACTION:update_habit\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = updatePattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     const field = match[2].trim();
@@ -68,7 +68,7 @@ async function executeActions(text, userId) {
   }
 
   // DELETE
-  const deletePattern = /\[\[ACTION:delete_habit\|([^\]]+)\]\]/gi;
+  const deletePattern = /\[\[ACTION:delete_habit\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = deletePattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     try {
@@ -86,7 +86,7 @@ async function executeActions(text, userId) {
   }
 
   // COMPLETE
-  const completePattern = /\[\[ACTION:complete_habit\|([^\]]+)\]\]/gi;
+  const completePattern = /\[\[ACTION:complete_habit\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = completePattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     const todayKey = toDateKey(new Date());
@@ -107,7 +107,7 @@ async function executeActions(text, userId) {
   }
 
   // PROGRESS
-  const progressPattern = /\[\[ACTION:log_progress\|([^|]+)\|([^\]]+)\]\]/gi;
+  const progressPattern = /\[\[ACTION:log_progress\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = progressPattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     const value = parseFloat(match[2].trim());
@@ -139,7 +139,7 @@ async function executeActions(text, userId) {
   }
 
   // SKIP
-  const skipPattern = /\[\[ACTION:skip_habit\|([^\]]+)\]\]/gi;
+  const skipPattern = /\[\[ACTION:skip_habit\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = skipPattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     const todayKey = toDateKey(new Date());
