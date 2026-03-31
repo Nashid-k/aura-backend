@@ -1,5 +1,4 @@
 const express = require('express');
-const Groq = require('groq-sdk');
 const Habit = require('../models/Habit');
 const HabitLog = require('../models/HabitLog');
 const ChatMessage = require('../models/ChatMessage');
@@ -11,7 +10,7 @@ const { toDateKey } = require('../utils/date');
 
 const router = express.Router();
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const { callGroq } = require('../utils/aiClient');
 
 const { getHabitContext } = require('../utils/aiContext');
 
@@ -227,7 +226,7 @@ router.post('/chat', async (request, response) => {
     const combined = [...dbMessages, ...freshMessages].slice(-8);
     const systemMsg = { role: 'system', content: systemPrompt };
 
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await callGroq({
       messages: [systemMsg, ...combined],
       model: 'llama-3.3-70b-versatile',
       temperature: 0.75, // Slightly lower temp for more consistent actions

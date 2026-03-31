@@ -1,14 +1,11 @@
 const User = require('../models/User');
-const Groq = require('groq-sdk');
 const { getHabitContext } = require('../utils/aiContext');
 const { buildNudgePrompt } = require('../utils/aiUtils');
 const { toDateKey } = require('../utils/date');
 
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
+const { callGroq } = require('../utils/aiClient');
 
 async function processUserNudges() {
-  if (!groq) return;
-
   const todayKey = toDateKey(new Date());
 
   try {
@@ -23,7 +20,7 @@ async function processUserNudges() {
         const { habitCards, summary } = await getHabitContext(user._id);
         const nudgePrompt = buildNudgePrompt(habitCards, summary);
 
-        const chatCompletion = await groq.chat.completions.create({
+        const chatCompletion = await callGroq({
           messages: [{ role: 'user', content: nudgePrompt }],
           model: 'llama-3.3-70b-versatile',
           temperature: 0.8,
@@ -50,10 +47,6 @@ async function processUserNudges() {
 }
 
 function startAIWorker() {
-  if (!groq) {
-    console.warn('[AI Worker] Suppressed. No GROQ_API_KEY found.');
-    return;
-  }
   console.log('[AI Worker] Initializing autonomous background processes.');
   
   // Fire once on server start (with a 5s delay to let Mongoose settle), then every 6 hours

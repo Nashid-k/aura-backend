@@ -1,5 +1,4 @@
 const express = require('express');
-const Groq = require('groq-sdk');
 const JournalEntry = require('../models/JournalEntry');
 const Habit = require('../models/Habit');
 const HabitLog = require('../models/HabitLog');
@@ -8,7 +7,7 @@ const { toDateKey } = require('../utils/date');
 const { buildHabitStats } = require('../utils/stats');
 
 const router = express.Router();
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
+const { callGroq } = require('../utils/aiClient');
 
 router.get('/', async (req, res) => {
   const entries = await JournalEntry.find({ user: req.user._id }).sort({ date: -1 }).limit(30).lean();
@@ -54,7 +53,7 @@ INSTRUCTIONS:
 - If they mention specifically doing a numeric amount (e.g., read 10 pages) for a habit with a metric, output: [[ACTION:log_progress|HABIT_ID|VALUE]]
 - Do NOT output any conversational text. ONLY output the action tags. If no habits were mentioned, output exactly nothing.`;
 
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await callGroq({
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `JOURNAL ENTRY: "${content}"` },
