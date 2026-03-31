@@ -19,13 +19,12 @@ router.post('/', async (req, res) => {
   const { content, date } = req.body;
   const userId = req.user._id;
 
-  let entry = await JournalEntry.findOne({ user: userId, date });
-  if (entry) {
-    entry.content = content;
-    await entry.save();
-  } else {
-    entry = await JournalEntry.create({ user: userId, content, date, detectedActions: [] });
-  }
+  // 1. Efficient Upsert for the Journal Entry
+  const entry = await JournalEntry.findOneAndUpdate(
+    { user: userId, date },
+    { content },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
 
   // If no Groq or content is empty, just return
   if (!groq || !content.trim()) {
@@ -33,25 +32,18 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Collect Habit Context
+    // Collect Habit Context (only habits belonging to the user)
     const habits = await Habit.find({ user: userId, archived: false }).lean();
-    const logs = await HabitLog.find({ user: userId }).lean();
     const todayKey = toDateKey(new Date(date));
     
-    const habitStats = habits.map((h) => {
-      const hLogs = logs.filter((l) => String(l.habit) === String(h._id));
-      const stats = buildHabitStats(h, hLogs, todayKey);
-      return { ...h, ...stats, completedToday: stats.completedToday, progressToday: stats.progressToday };
-    });
-
-    const habitLines = habitStats
+    const habitLines = habits
       .map((h) => `- [ID:${h._id}] "${h.title}" (Metric: ${h.targetMetric || 'Boolean'}, Target: ${h.targetValue || 1}). Details: ${h.description}`)
       .join('\n');
 
     if (!habitLines) return res.status(200).json(entry);
 
     // Call Groq to parse hidden actions
-    const systemPrompt = `You are an invisible backend parser for Nashid. The user has written a journal entry about their day.
+    const systemPrompt = `You are an invisible backend parser for Maya. The user has written a journal entry about their day.
 Your ONLY job is to detect if they completed or made progress on any of their tracked habits based on what they wrote.
 
 USER'S HABITS:
@@ -75,8 +67,8 @@ INSTRUCTIONS:
     const aiOutput = chatCompletion.choices[0]?.message?.content || '';
     const detectedActions = [];
 
-    // Parse completions
-    const completePattern = /\[\[ACTION:complete_habit\|([^\]]+)\]\]/gi;
+    // Parse completions (synced regex)
+    const completePattern = /\[\[ACTION:complete_habit\s*\|\s*([^\]]+)\]\]/gi;
     let match;
     while ((match = completePattern.exec(aiOutput)) !== null) {
       const habitId = match[1].trim();
@@ -91,8 +83,8 @@ INSTRUCTIONS:
       }
     }
 
-    // Parse progress
-    const progressPattern = /\[\[ACTION:log_progress\|([^|]+)\|([^\]]+)\]\]/gi;
+    // Parse progress (synced regex)
+    const progressPattern = /\[\[ACTION:log_progress\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
     while ((match = progressPattern.exec(aiOutput)) !== null) {
       const habitId = match[1].trim();
       const value = parseFloat(match[2].trim());

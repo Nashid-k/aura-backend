@@ -13,7 +13,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 function buildInsights(habits, logs) {
   const insights = [];
 
-  if (!habits.length) return 'No habits to analyze yet.';
+  if (!habits || !habits.length) return 'No habits to analyze yet.';
 
   const todayKey = toDateKey(new Date());
 
@@ -21,6 +21,7 @@ function buildInsights(habits, logs) {
   const dayStats = Array.from({ length: 7 }, () => ({ completed: 0, total: 0 }));
   for (const log of logs) {
     const date = new Date(log.date + 'T00:00:00');
+    if (isNaN(date.getTime())) continue;
     const day = date.getDay();
     dayStats[day].total += 1;
     if (log.completed) dayStats[day].completed += 1;
@@ -64,7 +65,8 @@ function buildInsights(habits, logs) {
   // ── 3. Consistency Tiers ──
   const tiers = { thriving: [], building: [], atRisk: [] };
   for (const habit of habits) {
-    const consistency = Math.round((habit.consistency || 0) * 100);
+    const rawConsistency = typeof habit.consistency === 'number' ? habit.consistency : 0;
+    const consistency = Math.round(rawConsistency * 100);
     if (consistency >= 80) {
       tiers.thriving.push(`"${habit.title}" (${consistency}%)`);
     } else if (consistency >= 50) {
@@ -92,14 +94,14 @@ function buildInsights(habits, logs) {
   const last7Logs = logs.filter((l) => l.date >= last7Start && l.date <= todayKey);
   const prev7Logs = logs.filter((l) => l.date >= prev7Start && l.date < last7Start);
 
-  const last7Rate =
-    last7Logs.length > 0
-      ? Math.round((last7Logs.filter((l) => l.completed).length / last7Logs.length) * 100)
-      : null;
-  const prev7Rate =
-    prev7Logs.length > 0
-      ? Math.round((prev7Logs.filter((l) => l.completed).length / prev7Logs.length) * 100)
-      : null;
+  const calculateRate = (logArr) => {
+    if (!logArr || logArr.length === 0) return null;
+    const completed = logArr.filter((l) => l.completed).length;
+    return Math.round((completed / logArr.length) * 100);
+  };
+
+  const last7Rate = calculateRate(last7Logs);
+  const prev7Rate = calculateRate(prev7Logs);
 
   if (last7Rate !== null && prev7Rate !== null) {
     const diff = last7Rate - prev7Rate;
@@ -138,11 +140,14 @@ function buildInsights(habits, logs) {
           if (skippedB.has(date)) overlap++;
         }
 
-        const overlapRate = Math.round((overlap / Math.min(skippedA.size, skippedB.size)) * 100);
-        if (overlapRate >= 60) {
-          insights.push(
-            `CORRELATION: "${habits[i].title}" and "${habits[j].title}" are skipped on the same days ${overlapRate}% of the time. These habits may be linked — suggest habit stacking.`
-          );
+        const minSize = Math.min(skippedA.size, skippedB.size);
+        if (minSize > 0) {
+          const overlapRate = Math.round((overlap / minSize) * 100);
+          if (overlapRate >= 60) {
+            insights.push(
+              `CORRELATION: "${habits[i].title}" and "${habits[j].title}" are skipped on the same days ${overlapRate}% of the time. These habits may be linked — suggest habit stacking.`
+            );
+          }
         }
       }
     }

@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Habit = require('../models/Habit');
 const HabitLog = require('../models/HabitLog');
 
@@ -24,53 +25,74 @@ router.get('/export', async (request, response) => {
 });
 
 router.post('/import', async (request, response) => {
-  const payload = request.body || {};
-  const incomingHabits = Array.isArray(payload.habits) ? payload.habits : [];
-  const incomingLogs = Array.isArray(payload.logs) ? payload.logs : [];
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
 
-  await HabitLog.deleteMany({ user: request.user._id });
-  await Habit.deleteMany({ user: request.user._id });
+    const payload = request.body || {};
+    const incomingHabits = Array.isArray(payload.habits) ? payload.habits : [];
+    const incomingLogs = Array.isArray(payload.logs) ? payload.logs : [];
 
-  const idMap = new Map();
-  const createdHabits = [];
+    if (!incomingHabits.length && !incomingLogs.length) {
+      throw new Error('Payload is empty or malformed.');
+    }
 
-  for (const habit of incomingHabits) {
-    const { id, ...rest } = habit;
-    const created = await Habit.create({
-      ...rest,
-      user: request.user._id,
+    // Clear existing data for this user
+    await HabitLog.deleteMany({ user: request.user._id }, { session });
+    await Habit.deleteMany({ user: request.user._id }, { session });
+
+    const idMap = new Map();
+    const createdHabits = [];
+
+    // Import Habits
+    for (const habit of incomingHabits) {
+      const { id, _id, user, __v, ...rest } = habit;
+      if (!rest.title) continue;
+
+      const [created] = await Habit.create(
+        [{ ...rest, user: request.user._id }],
+        { session }
+      );
+      createdHabits.push(created);
+      if (id) idMap.set(String(id), created._id);
+    }
+
+    // Import Logs
+    if (incomingLogs.length) {
+      const logsToInsert = incomingLogs
+        .map(({ habitId, id, _id, user, __v, ...log }) => {
+          const mappedHabitId = idMap.get(String(habitId));
+          if (!mappedHabitId) return null;
+
+          return {
+            ...log,
+            habit: mappedHabitId,
+            user: request.user._id,
+          };
+        })
+        .filter(Boolean);
+
+      if (logsToInsert.length) {
+        await HabitLog.insertMany(logsToInsert, { session });
+      }
+    }
+
+    await session.commitTransaction();
+    response.json({
+      success: true,
+      importedHabits: createdHabits.length,
+      importedLogs: incomingLogs.length,
     });
-    createdHabits.push(created);
-    if (id) {
-      idMap.set(String(id), created._id);
-    }
+  } catch (err) {
+    await session.abortTransaction();
+    console.error('Import Error:', err.message);
+    response.status(400).json({
+      message: 'Import failed.',
+      error: err.message,
+    });
+  } finally {
+    session.endSession();
   }
-
-  if (incomingLogs.length) {
-    const docs = incomingLogs
-      .map(({ habitId, id, ...log }) => {
-        const mappedHabitId = idMap.get(String(habitId));
-        if (!mappedHabitId) {
-          return null;
-        }
-
-        return {
-          ...log,
-          habit: mappedHabitId,
-          user: request.user._id,
-        };
-      })
-      .filter(Boolean);
-
-    if (docs.length) {
-      await HabitLog.insertMany(docs);
-    }
-  }
-
-  response.json({
-    importedHabits: createdHabits.length,
-    importedLogs: incomingLogs.length,
-  });
 });
 
 module.exports = router;

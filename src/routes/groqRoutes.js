@@ -14,6 +14,27 @@ const router = express.Router();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const { getHabitContext } = require('../utils/aiContext');
+
+// COLOR PALETTE (Premium Brand)
+const BRAND_COLORS = {
+  orange: '#F97316',
+  blue: '#38BDF8',
+  green: '#22C55E',
+  yellow: '#EAB308',
+  purple: '#A855F7',
+  red: '#EF4444',
+  teal: '#14B8A6',
+};
+
+function normalizeColor(input) {
+  if (!input) return BRAND_COLORS.orange;
+  const lower = input.toLowerCase().trim();
+  // If it's a hex, use it
+  if (lower.startsWith('#')) return lower;
+  // If it's a name, map it
+  return BRAND_COLORS[lower] || BRAND_COLORS.orange;
+}
+
 /**
  * Parse and execute ALL action types from the AI response.
  */
@@ -27,7 +48,7 @@ async function executeActions(text, userId) {
     const title = match[1].trim();
     const description = match[2].trim();
     const category = match[3].trim() || 'Personal';
-    const color = match[4].trim() || '#F97316';
+    const color = normalizeColor(match[4]);
     try {
       const habit = await Habit.create({
         user: userId,
@@ -49,10 +70,14 @@ async function executeActions(text, userId) {
   const updatePattern = /\[\[ACTION:update_habit\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = updatePattern.exec(text)) !== null) {
     const habitId = match[1].trim();
-    const field = match[2].trim();
-    const newValue = match[3].trim();
+    let field = match[2].trim().toLowerCase();
+    let newValue = match[3].trim();
     const allowedFields = ['title', 'description', 'category', 'kind', 'color', 'reminder'];
     if (!allowedFields.includes(field)) continue;
+
+    // Normalizations
+    if (field === 'color') newValue = normalizeColor(newValue);
+
     try {
       const habit = await Habit.findOneAndUpdate(
         { _id: habitId, user: userId },
@@ -99,8 +124,10 @@ async function executeActions(text, userId) {
         existing.skipped = false;
         await existing.save();
       }
-      const habit = await Habit.findById(habitId).lean();
-      actions.push({ type: 'habit_completed', label: `Marked "${habit?.title || 'habit'}" as done ✅` });
+      const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
+      if (habit) {
+        actions.push({ type: 'habit_completed', label: `Marked "${habit.title}" as done ✅` });
+      }
     } catch (err) {
       console.error('AI complete habit error:', err.message);
     }
@@ -115,7 +142,7 @@ async function executeActions(text, userId) {
 
     const todayKey = toDateKey(new Date());
     try {
-      const habit = await Habit.findById(habitId).lean();
+      const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
       if (!habit) continue;
 
       const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
@@ -144,6 +171,9 @@ async function executeActions(text, userId) {
     const habitId = match[1].trim();
     const todayKey = toDateKey(new Date());
     try {
+      const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
+      if (!habit) continue;
+
       const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
       if (!existing) {
         await HabitLog.create({ habit: habitId, user: userId, date: todayKey, completed: false, skipped: true });
@@ -152,8 +182,7 @@ async function executeActions(text, userId) {
         existing.completed = false;
         await existing.save();
       }
-      const habit = await Habit.findById(habitId).lean();
-      actions.push({ type: 'habit_skipped', label: `Skipped "${habit?.title || 'habit'}" today ⏭️` });
+      actions.push({ type: 'habit_skipped', label: `Skipped "${habit.title}" today ⏭️` });
     } catch (err) {
       console.error('AI skip habit error:', err.message);
     }
@@ -190,20 +219,19 @@ router.post('/chat', async (request, response) => {
       .lean();
 
     // Merge: DB history (older) + frontend messages (current session)
-    // Deduplicate by content+role to avoid repeats
+    // Use frontend messages as source of truth, prepend a small slice of DB history
     const dbMessages = dbHistory.reverse().map((m) => ({ role: m.role, content: m.content }));
     const freshMessages = messages.map((m) => ({ role: m.role, content: m.content }));
     
-    // Use frontend messages as source of truth, prepend unique DB history
-    const frontendSet = new Set(freshMessages.map((m) => `${m.role}:${m.content}`));
-    const uniqueDbMessages = dbMessages.filter((m) => !frontendSet.has(`${m.role}:${m.content}`));
-    const fullContext = [...uniqueDbMessages.slice(-10), ...freshMessages];
+    // Prune context aggressively (sliding window of last 8 msgs) 
+    const combined = [...dbMessages, ...freshMessages].slice(-8);
+    const systemMsg = { role: 'system', content: systemPrompt };
 
     const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'system', content: systemPrompt }, ...fullContext],
+      messages: [systemMsg, ...combined],
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.82,
-      max_tokens: 1024,
+      temperature: 0.75, // Slightly lower temp for more consistent actions
+      max_tokens: 1536,
     });
 
     const rawReply =
@@ -222,7 +250,7 @@ router.post('/chat', async (request, response) => {
   } catch (error) {
     console.error('Groq AI error:', error.message);
     return response.status(500).json({
-      message: 'AI Coach is temporarily unavailable. Please try again.',
+      message: 'Maya is temporarily unreachable. Please try again in a moment.',
     });
   }
 });

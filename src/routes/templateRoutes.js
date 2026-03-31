@@ -36,14 +36,10 @@ router.post('/install', async (request, response) => {
 
     if (!existing) {
       const newHabit = await Habit.create({
+        ...habit,
         user: request.user._id,
-        title: habit.title,
-        description: habit.description,
-        category: habit.category,
-        kind: habit.kind,
-        icon: habit.icon || 'bolt',
         color: template.color,
-        frequency: { mode: 'daily', targetCount: 7, daysOfWeek: [] },
+        frequency: habit.frequency || { mode: 'daily', targetCount: 7, daysOfWeek: [] },
       });
       created.push(newHabit.title);
     }
