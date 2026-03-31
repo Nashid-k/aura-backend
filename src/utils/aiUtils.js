@@ -70,6 +70,41 @@ Include these ONLY when explicitly requested to modify data. Tags are invisible 
 CRITICAL: NEVER simply promise an action. You MUST output the tag immediately if the user implies a change. If they say "yes" to a suggestion you just made, apply the tag for that specific habit.`;
 }
 
+async function generateWeeklyReflection(habits, summary) {
+  const { callGroq } = require('./aiClient');
+  
+  const habitContext = habits.map(h => 
+    `- ${h.title}: ${h.streak.current}d streak, ${h.consistency}% consistency (${h.weekly.completed}/${h.weekly.target} this week)`
+  ).join('\n');
+
+  const prompt = `You are Maya — the Guardian of Intent. Review the user's behavior over the last 7 days and provide a single, soulful paragraph of reflection (2-3 sentences max). 
+
+PHILOSOPHY:
+Focus on the "Identity" being built. If they are consistent, celebrate the quiet discipline. If they are struggling, identify the friction with empathy but firm accountability. Avoid generic praise. Be "cool", calm, and precise.
+
+DATA:
+- Weekly Pace: ${summary.weeklyCompletion}%
+- Strongest Ritual: ${summary.strongestHabit} (${summary.longestStreak}d)
+- Recent Activity:
+${habitContext}
+
+OUTPUT:
+Respond with ONLY the reflection. No labels, no "Maya:", no intro. Just the soulful narrative.`;
+
+  try {
+    const completion = await callGroq({
+      messages: [{ role: 'system', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 256,
+    });
+    return completion.choices[0]?.message?.content || "Your rituals are the heartbeat of your intent. Keep moving with precision.";
+  } catch (err) {
+    console.error('[Maya] Reflection generation failed:', err.message);
+    return "The silence of your rituals speaks of preparation. Continue honoring your intent.";
+  }
+}
+
 function buildNudgePrompt(habits, summary) {
   return `Write a single motivational nudge (1-2 casual sentences). Sound like a supportive friend texting, not a corporate notification. Be specific to the data — mention a habit name or streak. One emoji max. No exclamation marks spam.
 
@@ -85,4 +120,4 @@ GOOD: "Your ${summary.strongestHabit} streak is at ${summary.longestStreak} days
 Respond with ONLY the nudge, nothing else.`;
 }
 
-module.exports = { buildSystemPrompt, buildNudgePrompt };
+module.exports = { buildSystemPrompt, buildNudgePrompt, generateWeeklyReflection };

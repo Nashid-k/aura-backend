@@ -8,6 +8,7 @@ const {
   getWeeklySeries,
   sortLeaderboard,
 } = require('../utils/stats');
+const { generateWeeklyReflection } = require('../utils/aiUtils');
 const { toDateKey } = require('../utils/date');
 const { cacheGet, cacheSet } = require('../utils/redis');
 
@@ -40,10 +41,21 @@ router.get('/', async (request, response) => {
   });
 
   const leaderboard = sortLeaderboard(habitCards).slice(0, 5);
-  const completedToday = habitCards.filter((habit) => habit.completedToday).length;
-  const weeklyCompletion = habitCards.length
-    ? Math.round(habitCards.reduce((sum, habit) => sum + habit.weekly.percentage, 0) / habitCards.length)
-    : 0;
+  const reflectionCacheKey = `reflection:${request.user._id}`;
+  let reflection = await cacheGet(reflectionCacheKey);
+
+  if (!reflection) {
+    reflection = await generateWeeklyReflection(habitCards, {
+      completedToday,
+      totalHabits: habitCards.length,
+      weeklyCompletion,
+      longestStreak: strongestHabit?.streak.current || 0,
+      strongestHabit: strongestHabit?.title || 'Habit',
+    });
+    // Cache reflection for 1 hour (3600 seconds)
+    await cacheSet(reflectionCacheKey, reflection, 3600);
+  }
+
   const dashboardData = {
     summary: {
       completedToday,
@@ -56,6 +68,7 @@ router.get('/', async (request, response) => {
     leaderboard,
     weeklySeries: getWeeklySeries(logs, todayKey),
     heatmap: getMonthlyHeatmap(habits, logs, todayKey),
+    weeklyReflection: reflection,
     reflections: habitCards
       .filter((habit) => habit.recentNote)
       .slice(0, 4)
