@@ -51,15 +51,20 @@ router.get('/', async (request, response) => {
   let reflection = await cacheGet(reflectionCacheKey);
 
   if (!reflection) {
-    reflection = await generateWeeklyReflection(habitCards, {
-      completedToday,
-      totalHabits: habitCards.length,
-      weeklyCompletion,
-      longestStreak: strongestHabit?.streak.current || 0,
-      strongestHabit: strongestHabit?.title || 'Habit',
-    });
-    // Cache reflection for 1 hour (3600 seconds)
-    await cacheSet(reflectionCacheKey, reflection, 3600);
+    try {
+      reflection = await generateWeeklyReflection(habitCards, {
+        completedToday,
+        totalHabits: habitCards.length,
+        weeklyCompletion,
+        longestStreak: strongestHabit?.streak.current || 0,
+        strongestHabit: strongestHabit?.title || 'Habit',
+      });
+      // Cache reflection for 1 hour (3600 seconds)
+      await cacheSet(reflectionCacheKey, reflection, 3600);
+    } catch (reflectionError) {
+      console.error('[Dashboard] Reflection generation failed, falling back:', reflectionError.message);
+      reflection = ''; // Fallback to empty if AI fails, don't crash dashboard
+    }
   }
 
   const dashboardData = {
