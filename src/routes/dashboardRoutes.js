@@ -41,6 +41,12 @@ router.get('/', async (request, response) => {
   });
 
   const leaderboard = sortLeaderboard(habitCards).slice(0, 5);
+  const strongestHabit = leaderboard[0];
+  const completedToday = habitCards.filter((habit) => habit.completedToday).length;
+  const weeklyCompletion = habitCards.length
+    ? Math.round(habitCards.reduce((sum, habit) => sum + habit.weekly.percentage, 0) / habitCards.length)
+    : 0;
+
   const reflectionCacheKey = `reflection:${request.user._id}`;
   let reflection = await cacheGet(reflectionCacheKey);
 
