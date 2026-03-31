@@ -228,8 +228,8 @@ router.post('/chat', async (request, response) => {
     const dbMessages = dbHistory.reverse().map((m) => ({ role: m.role, content: m.content }));
     const freshMessages = messages.map((m) => ({ role: m.role, content: m.content }));
     
-    // Prune context aggressively (sliding window of last 8 msgs) 
-    const combined = [...dbMessages, ...freshMessages].slice(-8);
+    // Prune context (sliding window of last 12 msgs for deeper memory) 
+    const combined = [...dbMessages, ...freshMessages].slice(-12);
     const systemMsg = { role: 'system', content: systemPrompt };
 
     const chatCompletion = await callGroq({
