@@ -7,11 +7,21 @@ const { callGroq } = require('../utils/aiClient');
 const { getTomorrowRisks, generateShieldNudge } = require('../utils/predictionService');
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-const connection = {
-  host: new URL(REDIS_URL).hostname,
-  port: parseInt(new URL(REDIS_URL).port) || 6379,
-  password: new URL(REDIS_URL).password || undefined,
-};
+
+// Improved Connection Parsing for Render/Production
+let connection = { host: '127.0.0.1', port: 6379 };
+try {
+  const redisUrl = new URL(REDIS_URL);
+  connection = {
+    host: redisUrl.hostname,
+    port: parseInt(redisUrl.port) || 6379,
+    password: redisUrl.password || undefined,
+    username: redisUrl.username || undefined,
+    tls: REDIS_URL.startsWith('rediss://') ? {} : undefined,
+  };
+} catch (err) {
+  console.warn('[AI Worker] Invalid REDIS_URL format, using default connection.');
+}
 
 // 1. Create the Queues
 const nudgeQueue = new Queue('nudge-generation', { 
