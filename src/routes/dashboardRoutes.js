@@ -22,6 +22,11 @@ router.get('/', async (request, response) => {
   const habits = await Habit.find({ user: request.user._id, archived: false })
     .sort({ createdAt: -1 })
     .lean();
+  
+  // Fetch user data for tomorrowRisks
+  const User = require('../models/User');
+  const user = await User.findById(request.user._id).select('tomorrowRisks').lean();
+
   const logs = await HabitLog.find({
     user: request.user._id,
     date: { $gte: toDateKey(new Date(Date.now() - 90 * 86400000)) },
@@ -75,6 +80,7 @@ router.get('/', async (request, response) => {
       longestStreak: strongestHabit?.streak.current || 0,
       strongestHabit: strongestHabit?.title || 'Start your first ritual',
     },
+    tomorrowRisks: user?.tomorrowRisks || { risks: [], shieldNudge: '' },
     habits: habitCards,
     leaderboard,
     weeklySeries: getWeeklySeries(logs, todayKey),

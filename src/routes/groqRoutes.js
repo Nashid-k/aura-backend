@@ -49,7 +49,15 @@ async function executeActions(text, userId) {
     const description = match[2].trim();
     const category = match[3].trim() || 'Personal';
     const color = normalizeColor(match[4]);
+
     try {
+      // ZERO-HALLUCINATION: Check if a similar habit already exists
+      const existing = await Habit.findOne({ user: userId, title: { $regex: new RegExp(`^${title}$`, 'i') }, archived: false }).lean();
+      if (existing) {
+        console.warn(`[Maya Defense] Blocked duplicate habit creation for "${title}"`);
+        continue;
+      }
+
       const habit = await Habit.create({
         user: userId,
         title,
@@ -86,6 +94,8 @@ async function executeActions(text, userId) {
       );
       if (habit) {
         actions.push({ type: 'habit_updated', label: `Updated "${habit.title}" → ${field}: ${newValue}` });
+      } else {
+        console.warn(`[Maya Defense] Blocked update for non-existent habit ID: ${habitId}`);
       }
     } catch (err) {
       console.error('AI update habit error:', err.message);
@@ -104,6 +114,8 @@ async function executeActions(text, userId) {
       );
       if (habit) {
         actions.push({ type: 'habit_deleted', label: `Removed "${habit.title}"` });
+      } else {
+         console.warn(`[Maya Defense] Blocked delete for non-existent habit ID: ${habitId}`);
       }
     } catch (err) {
       console.error('AI delete habit error:', err.message);
@@ -116,6 +128,11 @@ async function executeActions(text, userId) {
     const habitId = match[1].trim();
     const todayKey = toDateKey(new Date());
     try {
+      const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
+      if (!habit) {
+        console.warn(`[Maya Defense] Blocked complete for non-existent habit ID: ${habitId}`);
+        continue;
+      }
       const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
       if (!existing) {
         await HabitLog.create({ habit: habitId, user: userId, date: todayKey, completed: true });
@@ -124,10 +141,7 @@ async function executeActions(text, userId) {
         existing.skipped = false;
         await existing.save();
       }
-      const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
-      if (habit) {
-        actions.push({ type: 'habit_completed', label: `Marked "${habit.title}" as done ✅` });
-      }
+      actions.push({ type: 'habit_completed', label: `Marked "${habit.title}" as done ✅` });
     } catch (err) {
       console.error('AI complete habit error:', err.message);
     }
@@ -143,7 +157,10 @@ async function executeActions(text, userId) {
     const todayKey = toDateKey(new Date());
     try {
       const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
-      if (!habit) continue;
+      if (!habit) {
+        console.warn(`[Maya Defense] Blocked progress for non-existent habit ID: ${habitId}`);
+        continue;
+      }
 
       const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
       const currentProgress = existing ? existing.progress || 0 : 0;
@@ -172,7 +189,10 @@ async function executeActions(text, userId) {
     const todayKey = toDateKey(new Date());
     try {
       const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
-      if (!habit) continue;
+      if (!habit) {
+        console.warn(`[Maya Defense] Blocked skip for non-existent habit ID: ${habitId}`);
+        continue;
+      }
 
       const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
       if (!existing) {

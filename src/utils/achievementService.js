@@ -20,6 +20,8 @@ const BADGE_DEFS = {
   ten_habits: { label: 'Habit Machine', emoji: '⚡', desc: '10 habits! You mean business' },
   comeback_kid: { label: 'Comeback Kid', emoji: '💪', desc: 'Rebuilt a streak after breaking it' },
   early_starter: { label: 'Early Starter', emoji: '🌅', desc: 'Completed a habit before 7 AM' },
+  ai_curated_title: { label: 'Dynamic Title', emoji: '🎭', desc: 'A custom title awarded by Nashid AI' },
+  micro_win: { label: 'Micro-Win', emoji: '✨', desc: 'Recognizing small, consistent progress' },
 };
 
 /**
@@ -29,6 +31,8 @@ const BADGE_DEFS = {
 async function checkAndAward(userId, habitStats) {
   const newBadges = [];
   const existingBadges = await Achievement.find({ user: userId }).lean();
+  
+  // For standard badges, we check uniqueness
   const existingSet = new Set(existingBadges.map((b) => `${b.type}:${b.habitId || 'global'}`));
 
   function hasBadge(type, habitId = null) {
@@ -36,9 +40,12 @@ async function checkAndAward(userId, habitStats) {
   }
 
   async function award(type, habitId = null, habitTitle = '', metadata = {}) {
+    // Only enforce uniqueness for non-AI/Micro-Win badges
+    const isUniqueBadge = !['ai_curated_title', 'micro_win'].includes(type);
     const key = `${type}:${habitId || 'global'}`;
-    if (existingSet.has(key)) return;
-    existingSet.add(key);
+    
+    if (isUniqueBadge && existingSet.has(key)) return;
+    
     try {
       const badge = await Achievement.create({ user: userId, type, habitId, habitTitle, metadata });
       const def = BADGE_DEFS[type] || {};
@@ -47,11 +54,13 @@ async function checkAndAward(userId, habitStats) {
         type,
         label: def.label || type,
         emoji: def.emoji || '🏅',
-        desc: def.desc || '',
+        desc: metadata.description || def.desc || '',
         habitTitle,
+        metadata,
       });
-    } catch {
-      // Duplicate — silently ignore
+      if (isUniqueBadge) existingSet.add(key);
+    } catch (err) {
+      console.error('[Achievement Service] Award failed:', err.message);
     }
   }
 
@@ -97,4 +106,21 @@ async function checkAndAward(userId, habitStats) {
   return newBadges;
 }
 
-module.exports = { checkAndAward, BADGE_DEFS };
+/**
+ * Manually award an achievement (used by AI or specific triggers)
+ */
+async function awardAchievement(userId, { type, habitId, habitTitle, metadata }) {
+  const def = BADGE_DEFS[type] || {};
+  const badge = await Achievement.create({ user: userId, type, habitId, habitTitle, metadata });
+  return {
+    _id: badge._id,
+    type,
+    label: metadata.label || def.label || type,
+    emoji: metadata.emoji || def.emoji || '🏅',
+    desc: metadata.description || def.desc || '',
+    habitTitle,
+    metadata,
+  };
+}
+
+module.exports = { checkAndAward, awardAchievement, BADGE_DEFS };

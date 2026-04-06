@@ -25,6 +25,8 @@ const achievementSchema = new mongoose.Schema(
         'first_habit',
         'five_habits',
         'ten_habits',
+        'ai_curated_title',
+        'micro_win',
       ],
     },
     habitId: {
@@ -42,7 +44,7 @@ const achievementSchema = new mongoose.Schema(
   }
 );
 
-// Prevent duplicate badges
-achievementSchema.index({ user: 1, type: 1, habitId: 1 }, { unique: true });
+// Index for performance, but no unique constraint to allow multiple micro-wins
+achievementSchema.index({ user: 1, type: 1, habitId: 1 });
 
 module.exports = mongoose.model('Achievement', achievementSchema);
