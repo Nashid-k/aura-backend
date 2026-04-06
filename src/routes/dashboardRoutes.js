@@ -15,7 +15,10 @@ const { cacheGet, cacheSet } = require('../utils/redis');
 const router = express.Router();
 
 router.get('/', async (request, response) => {
-  const cacheKey = `dashboard:${request.user._id}`;
+  const clientDate = request.query.date; // E.g., 'YYYY-MM-DD'
+  const todayKey = clientDate && /^\d{4}-\d{2}-\d{2}$/.test(clientDate) ? clientDate : toDateKey(new Date());
+
+  const cacheKey = `dashboard:${request.user._id}:${todayKey}`;
   const cachedData = await cacheGet(cacheKey);
   if (cachedData) return response.json(cachedData);
 
@@ -29,10 +32,9 @@ router.get('/', async (request, response) => {
 
   const logs = await HabitLog.find({
     user: request.user._id,
-    date: { $gte: toDateKey(new Date(Date.now() - 90 * 86400000)) },
+    date: { $gte: toDateKey(new Date(Date.now() - 90 * 86400000)) }, // Note: Could also be shifted by client timezone, but 90 days is broad enough
   }).lean();
 
-  const todayKey = toDateKey(new Date());
   const habitCards = habits.map((habit) => {
     const habitLogs = logs.filter((log) => String(log.habit) === String(habit._id));
     const stats = buildHabitStats(habit, habitLogs, todayKey);

@@ -42,10 +42,9 @@ router.post('/', async (request, response) => {
       date: { $gte: toDateKey(new Date(Date.now() - 90 * 86400000)) },
     }).lean();
 
-    const todayKey = toDateKey(new Date());
     const habitStats = habits.map((habit) => {
       const habitLogs = logs.filter((l) => String(l.habit) === String(habit._id));
-      const stats = buildHabitStats(habit, habitLogs, todayKey);
+      const stats = buildHabitStats(habit, habitLogs, date);
       return { ...habit, ...stats };
     });
 
