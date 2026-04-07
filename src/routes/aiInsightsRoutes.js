@@ -5,9 +5,82 @@ const HabitLog = require('../models/HabitLog');
 const { buildHabitStats } = require('../utils/stats');
 const { checkAndAward, BADGE_DEFS } = require('../utils/achievementService');
 const { buildInsights } = require('../utils/insights');
+const { detectMutations } = require('../utils/mutationService');
 const { toDateKey } = require('../utils/date');
 
 const router = express.Router();
+
+/**
+ * GET /api/ai/mutations — Detect potential habit stacks AND difficulty evolutions
+ */
+router.get('/mutations', async (req, res) => {
+  try {
+    const habits = await Habit.find({ user: req.user._id, archived: false }).lean();
+    const logs = await HabitLog.find({
+      user: req.user._id,
+      date: { $gte: toDateKey(new Date(Date.now() - 90 * 86400000)) },
+    }).lean();
+
+    const stacks = detectMutations(habits, logs);
+    
+    // Add evolutions
+    const evolutions = habits
+      .filter(h => h.autoScaling?.evolution?.status === 'pending')
+      .map(h => ({
+        type: h.autoScaling.evolution.type,
+        habitId: h._id,
+        title: h.title,
+        reason: h.autoScaling.evolution.reason,
+        suggestedTarget: h.autoScaling.evolution.suggestedTarget
+      }));
+
+    res.json({ suggestions: [...stacks, ...evolutions] });
+  } catch (err) {
+    console.error('Mutations error:', err);
+    res.status(500).json({ message: 'Failed to detect mutations' });
+  }
+});
+
+/**
+ * POST /api/ai/evolution/:habitId — Accept or dismiss a difficulty evolution
+ */
+router.post('/evolution/:habitId', async (req, res) => {
+  const { status } = req.body; // 'accepted' or 'dismissed'
+  const { habitId } = req.params;
+
+  try {
+    const habit = await Habit.findOne({ _id: habitId, user: req.user._id });
+    if (!habit) return res.status(404).json({ message: 'Habit not found' });
+
+    if (status === 'accepted') {
+      habit.targetValue = habit.autoScaling.evolution.suggestedTarget;
+      habit.autoScaling.evolution.status = 'accepted';
+    } else {
+      habit.autoScaling.evolution.status = 'dismissed';
+    }
+
+    await habit.save();
+    res.json({ success: true, habit });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to process evolution.' });
+  }
+});
+
+/**
+ * POST /api/ai/fuse — Create a habit stack
+ */
+router.post('/fuse', async (req, res) => {
+  const { habitAId, habitBId } = req.body;
+  try {
+    // We stack B onto A. A becomes the "parent" trigger or they just link.
+    // For now, let's just update the stackWith field on both.
+    await Habit.findOneAndUpdate({ _id: habitAId, user: req.user._id }, { stackWith: habitBId });
+    await Habit.findOneAndUpdate({ _id: habitBId, user: req.user._id }, { stackWith: habitAId });
+    res.json({ success: true, message: 'Habit stack forged successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fuse habits.' });
+  }
+});
 
 /**
  * GET /api/ai/achievements — list all earned badges

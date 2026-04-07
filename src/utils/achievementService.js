@@ -20,7 +20,7 @@ const BADGE_DEFS = {
   ten_habits: { label: 'Habit Machine', emoji: '⚡', desc: '10 habits! You mean business' },
   comeback_kid: { label: 'Comeback Kid', emoji: '💪', desc: 'Rebuilt a streak after breaking it' },
   early_starter: { label: 'Early Starter', emoji: '🌅', desc: 'Completed a habit before 7 AM' },
-  ai_curated_title: { label: 'Dynamic Title', emoji: '🎭', desc: 'A custom title awarded by Nashid AI' },
+  ai_curated_title: { label: 'Dynamic Title', emoji: '🎭', desc: 'A custom title awarded by Aura AI' },
   micro_win: { label: 'Micro-Win', emoji: '✨', desc: 'Recognizing small, consistent progress' },
 };
 

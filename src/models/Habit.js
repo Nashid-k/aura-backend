@@ -89,6 +89,17 @@ const habitSchema = new mongoose.Schema(
       enabled: { type: Boolean, default: true },
       continuousDaysThreshold: { type: Number, default: 14 },
       suggestedIncrease: { type: Boolean, default: false },
+      evolution: {
+        type: { type: String, enum: ['level-up', 'recovery', 'none'], default: 'none' },
+        reason: { type: String, default: '' },
+        suggestedTarget: { type: Number, default: 0 },
+        status: { type: String, enum: ['pending', 'accepted', 'dismissed'], default: 'pending' }
+      }
+    },
+    stackWith: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Habit',
+      default: null,
     },
   },
   { timestamps: true }

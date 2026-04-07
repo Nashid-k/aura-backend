@@ -56,7 +56,7 @@ async function generateShieldNudge(userId, risks) {
   const riskSummary = risks.map(r => `- ${r.title}: ${r.reason}`).join('\n');
   
   const prompt = `
-    You are Nashid, a supportive AI habit coach. I have detected potential "Shadow Risks" for tomorrow.
+    You are Aura, a supportive AI habit coach. I have detected potential "Shadow Risks" for tomorrow.
     The user is likely to fail these habits based on historical patterns:
     
     ${riskSummary}

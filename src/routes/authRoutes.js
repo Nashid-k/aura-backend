@@ -87,4 +87,19 @@ router.patch('/preferences', authMiddleware, async (request, response) => {
   });
 });
 
+router.post('/push-subscription', authMiddleware, async (request, response) => {
+  const user = await User.findById(request.user._id);
+  if (!user) return response.status(404).json({ message: 'User not found' });
+
+  const subscription = request.body;
+  const exists = user.pushSubscriptions.some(sub => sub.endpoint === subscription.endpoint);
+  
+  if (!exists) {
+    user.pushSubscriptions.push(subscription);
+    await user.save();
+  }
+
+  response.status(201).json({ message: 'Push subscription saved' });
+});
+
 module.exports = router;

@@ -14,6 +14,32 @@ const router = express.Router();
 const { callGroq } = require('../utils/aiClient');
 
 const { getHabitContext } = require('../utils/aiContext');
+const { generateSoulfulRoutine } = require('../utils/routineService');
+const JournalEntry = require('../models/JournalEntry');
+
+/**
+ * POST /api/ai/routine
+ */
+router.post('/routine', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { habitCards, summary, moodContext } = await getHabitContext(userId);
+    const todayKey = toDateKey(new Date());
+    const journal = await JournalEntry.findOne({ user: userId, date: todayKey }).lean();
+
+    const routine = await generateSoulfulRoutine(
+      habitCards, 
+      summary, 
+      moodContext, 
+      journal?.content || ''
+    );
+
+    res.json({ routine });
+  } catch (error) {
+    console.error('Routine generation error:', error);
+    res.status(500).json({ message: 'Failed to generate soulful routine.' });
+  }
+});
 
 // COLOR PALETTE (Premium Brand)
 const BRAND_COLORS = {
@@ -41,20 +67,32 @@ function normalizeColor(input) {
 async function executeActions(text, userId) {
   const actions = [];
 
-  // CREATE
-  const createPattern = /\[\[ACTION:add_habit\s*\|\s*([^|]+)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|\s*?([^\]]*)\]\]/gi;
+  // CREATE: Flexible regex to handle missing optional fields or extra whitespace
+  const createPattern = /\[\[ACTION:add_habit\s*\|\s*([^|\]]+)(?:\s*\|\s*([^|\]]*))?(?:\s*\|\s*([^|\]]*))?(?:\s*\|\s*([^|\]]*))?\]\]/gi;
   let match;
   while ((match = createPattern.exec(text)) !== null) {
-    const title = match[1].trim();
-    const description = match[2].trim();
-    const category = match[3].trim() || 'Personal';
+    const title = match[1]?.trim();
+    if (!title) continue;
+
+    const description = match[2]?.trim() || '';
+    const category = match[3]?.trim() || 'Personal';
     const color = normalizeColor(match[4]);
 
     try {
-      // ZERO-HALLUCINATION: Check if a similar habit already exists
-      const existing = await Habit.findOne({ user: userId, title: { $regex: new RegExp(`^${title}$`, 'i') }, archived: false }).lean();
+      // Robust Duplicate Check: Check both active and archived to be safe
+      const existing = await Habit.findOne({ 
+        user: userId, 
+        title: { $regex: new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
+      }).lean();
+
       if (existing) {
-        console.warn(`[Maya Defense] Blocked duplicate habit creation for "${title}"`);
+        if (existing.archived) {
+          // Reactivate archived habit instead of creating new
+          await Habit.findByIdAndUpdate(existing._id, { archived: false });
+          actions.push({ type: 'habit_updated', label: `Reactivated ritual: "${existing.title}"`, habit: existing });
+        } else {
+          console.warn(`[Maya Defense] Blocked duplicate creation for "${title}"`);
+        }
         continue;
       }
 
@@ -68,22 +106,21 @@ async function executeActions(text, userId) {
         kind: 'build',
         frequency: { mode: 'daily', targetCount: 7, daysOfWeek: [] },
       });
-      actions.push({ type: 'habit_created', label: `Created "${habit.title}"`, habit: { _id: habit._id, title: habit.title } });
+      actions.push({ type: 'habit_created', label: `Forged new ritual: "${habit.title}"`, habit: { _id: habit._id, title: habit.title } });
     } catch (err) {
       console.error('AI create habit error:', err.message);
     }
   }
 
-  // UPDATE
+  // UPDATE: More flexible parsing
   const updatePattern = /\[\[ACTION:update_habit\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = updatePattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     let field = match[2].trim().toLowerCase();
     let newValue = match[3].trim();
     const allowedFields = ['title', 'description', 'category', 'kind', 'color', 'reminder'];
+    
     if (!allowedFields.includes(field)) continue;
-
-    // Normalizations
     if (field === 'color') newValue = normalizeColor(newValue);
 
     try {
@@ -93,9 +130,7 @@ async function executeActions(text, userId) {
         { new: true }
       );
       if (habit) {
-        actions.push({ type: 'habit_updated', label: `Updated "${habit.title}" → ${field}: ${newValue}` });
-      } else {
-        console.warn(`[Maya Defense] Blocked update for non-existent habit ID: ${habitId}`);
+        actions.push({ type: 'habit_updated', label: `Updated ${habit.title}: ${field} set to "${newValue}"` });
       }
     } catch (err) {
       console.error('AI update habit error:', err.message);
@@ -113,98 +148,77 @@ async function executeActions(text, userId) {
         { new: true }
       );
       if (habit) {
-        actions.push({ type: 'habit_deleted', label: `Removed "${habit.title}"` });
-      } else {
-         console.warn(`[Maya Defense] Blocked delete for non-existent habit ID: ${habitId}`);
+        actions.push({ type: 'habit_deleted', label: `Ritual dissolved: "${habit.title}"` });
       }
     } catch (err) {
       console.error('AI delete habit error:', err.message);
     }
   }
 
-  // COMPLETE
+  // COMPLETE / PROGRESS / SKIP: Reuse optimized patterns
+  const todayKey = toDateKey(new Date());
+
+  // Log Completion
   const completePattern = /\[\[ACTION:complete_habit\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = completePattern.exec(text)) !== null) {
     const habitId = match[1].trim();
-    const todayKey = toDateKey(new Date());
     try {
       const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
-      if (!habit) {
-        console.warn(`[Maya Defense] Blocked complete for non-existent habit ID: ${habitId}`);
-        continue;
-      }
-      const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
-      if (!existing) {
-        await HabitLog.create({ habit: habitId, user: userId, date: todayKey, completed: true });
-      } else {
-        existing.completed = true;
-        existing.skipped = false;
-        await existing.save();
-      }
-      actions.push({ type: 'habit_completed', label: `Marked "${habit.title}" as done ✅` });
+      if (!habit) continue;
+
+      await HabitLog.findOneAndUpdate(
+        { habit: habitId, user: userId, date: todayKey },
+        { completed: true, skipped: false, progress: habit.targetValue || 1 },
+        { upsert: true }
+      );
+      actions.push({ type: 'habit_completed', label: `Ritual honored: "${habit.title}" ✅` });
     } catch (err) {
-      console.error('AI complete habit error:', err.message);
+      console.error('AI complete error:', err.message);
     }
   }
 
-  // PROGRESS
+  // Log Progress
   const progressPattern = /\[\[ACTION:log_progress\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = progressPattern.exec(text)) !== null) {
     const habitId = match[1].trim();
     const value = parseFloat(match[2].trim());
     if (isNaN(value)) continue;
 
-    const todayKey = toDateKey(new Date());
     try {
       const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
-      if (!habit) {
-        console.warn(`[Maya Defense] Blocked progress for non-existent habit ID: ${habitId}`);
-        continue;
-      }
+      if (!habit) continue;
 
       const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
-      const currentProgress = existing ? existing.progress || 0 : 0;
-      const newProgress = Math.max(0, currentProgress + value);
-      const isDone = newProgress >= (habit.targetValue || 1);
+      const nextProgress = (existing?.progress || 0) + value;
+      const isDone = nextProgress >= (habit.targetValue || 1);
 
-      if (!existing) {
-        await HabitLog.create({ habit: habitId, user: userId, date: todayKey, completed: isDone, progress: newProgress });
-      } else {
-        existing.progress = newProgress;
-        existing.completed = isDone;
-        existing.skipped = false;
-        await existing.save();
-      }
-
+      await HabitLog.findOneAndUpdate(
+        { habit: habitId, user: userId, date: todayKey },
+        { progress: nextProgress, completed: isDone, skipped: false },
+        { upsert: true }
+      );
       actions.push({ type: 'habit_updated', label: `Logged +${value} for "${habit.title}" 📊` });
     } catch (err) {
-      console.error('AI progress habit error:', err.message);
+      console.error('AI progress error:', err.message);
     }
   }
 
-  // SKIP
+  // Log Skip
   const skipPattern = /\[\[ACTION:skip_habit\s*\|\s*([^\]]+)\]\]/gi;
   while ((match = skipPattern.exec(text)) !== null) {
     const habitId = match[1].trim();
-    const todayKey = toDateKey(new Date());
     try {
       const habit = await Habit.findOne({ _id: habitId, user: userId }).lean();
-      if (!habit) {
-        console.warn(`[Maya Defense] Blocked skip for non-existent habit ID: ${habitId}`);
-        continue;
-      }
+      if (!habit) continue;
 
-      const existing = await HabitLog.findOne({ habit: habitId, user: userId, date: todayKey });
-      if (!existing) {
-        await HabitLog.create({ habit: habitId, user: userId, date: todayKey, completed: false, skipped: true });
-      } else {
-        existing.skipped = true;
-        existing.completed = false;
-        await existing.save();
-      }
-      actions.push({ type: 'habit_skipped', label: `Skipped "${habit.title}" for today ⏭️` });
+      await HabitLog.findOneAndUpdate(
+        { habit: habitId, user: userId, date: todayKey },
+        { skipped: true, completed: false },
+        { upsert: true }
+      );
+      actions.push({ type: 'habit_skipped', label: `Ritual paused: "${habit.title}" ⏭️` });
     } catch (err) {
-      console.error('AI skip habit error:', err.message);
+      console.error('AI skip error:', err.message);
     }
   }
 
@@ -234,8 +248,11 @@ router.post('/chat', async (request, response) => {
 
   try {
     const userId = request.user._id;
+    const user = await require('../models/User').findById(userId).lean();
+    const persona = user?.preferences?.persona || 'maya';
+    
     const { habitCards, logs, summary, insights, moodContext } = await getHabitContext(userId);
-    const systemPrompt = buildSystemPrompt(habitCards, summary, insights, moodContext);
+    const systemPrompt = buildSystemPrompt(habitCards, summary, insights, moodContext, persona);
 
     // Load recent DB history for deeper context (beyond what frontend sends)
     const dbHistory = await ChatMessage.find({ user: userId })

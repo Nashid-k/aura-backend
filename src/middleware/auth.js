@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'nashid-local-secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'aura-local-secret';
 
 async function authMiddleware(request, response, next) {
   const header = request.headers.authorization || '';

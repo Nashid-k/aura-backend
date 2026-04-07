@@ -41,17 +41,26 @@ router.post('/', async (req, res) => {
 
     if (!habitLines) return res.status(200).json(entry);
 
-    // Call Groq to parse hidden actions
-    const systemPrompt = `You are an invisible backend parser for Maya. The user has written a journal entry about their day.
-Your ONLY job is to detect if they completed or made progress on any of their tracked habits based on what they wrote.
+    // Call Groq to parse hidden actions AND psychological insights
+    const systemPrompt = `You are Maya — the Guardian of Intent and a cognitive behavioral psychologist. The user has written a journal entry. 
+Your job is two-fold:
+1. DETECT HABITS: Identify if they completed or made progress on their habits.
+2. PSYCHOLOGICAL MIRROR: Detect cognitive distortions (e.g., All-or-Nothing, Catastrophizing, Should-statements, Overgeneralization). Provide a soulful, brief reframe.
 
 USER'S HABITS:
 ${habitLines}
 
-INSTRUCTIONS:
-- If they imply they completed a boolean habit, output: [[ACTION:complete_habit|HABIT_ID]]
-- If they mention specifically doing a numeric amount (e.g., read 10 pages) for a habit with a metric, output: [[ACTION:log_progress|HABIT_ID|VALUE]]
-- Do NOT output any conversational text. ONLY output the action tags. If no habits were mentioned, output exactly nothing.`;
+OUTPUT FORMAT (STRICT JSON):
+{
+  "actions": ["[[ACTION:complete_habit|ID]]", "[[ACTION:log_progress|ID|VALUE]]"],
+  "psychology": {
+    "distortions": ["Overgeneralization", "All-or-Nothing thinking"],
+    "sentiment": "Determined but slightly self-critical",
+    "reframe": "One missed step doesn't erase the path you've built. Your sigil still glows with the work of the last 10 days."
+  }
+}
+
+If no actions or distortions are found, return empty fields. Do NOT include conversational text outside the JSON.`;
 
     const chatCompletion = await callGroq({
       messages: [
@@ -59,52 +68,54 @@ INSTRUCTIONS:
         { role: 'user', content: `JOURNAL ENTRY: "${content}"` },
       ],
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.1,
-      max_completion_tokens: 300,
+      temperature: 0.3,
+      response_format: { type: 'json_object' }
     });
 
-    const aiOutput = chatCompletion.choices[0]?.message?.content || '';
+    const aiResponse = JSON.parse(chatCompletion.choices[0]?.message?.content || '{}');
     const detectedActions = [];
 
-    // Parse completions (synced regex)
-    const completePattern = /\[\[ACTION:complete_habit\s*\|\s*([^\]]+)\]\]/gi;
-    let match;
-    while ((match = completePattern.exec(aiOutput)) !== null) {
-      const habitId = match[1].trim();
-      const habit = habits.find((h) => String(h._id) === habitId);
-      if (habit) {
-        await HabitLog.findOneAndUpdate(
-          { user: userId, habit: habitId, date: todayKey },
-          { user: userId, habit: habitId, date: todayKey, completed: true, skipped: false, progress: habit.targetValue || 1 },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        detectedActions.push({ type: 'completed', habitId, title: habit.title });
+    // Parse actions from the JSON array
+    const actionTags = aiResponse.actions || [];
+    for (const tag of actionTags) {
+      // Reuse existing regex logic or parse directly
+      const completeMatch = /\[\[ACTION:complete_habit\s*\|\s*([^\]]+)\]\]/i.exec(tag);
+      if (completeMatch) {
+        const habitId = completeMatch[1].trim();
+        const habit = habits.find((h) => String(h._id) === habitId);
+        if (habit) {
+          await HabitLog.findOneAndUpdate(
+            { user: userId, habit: habitId, date: todayKey },
+            { user: userId, habit: habitId, date: todayKey, completed: true, skipped: false, progress: habit.targetValue || 1 },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
+          detectedActions.push({ type: 'completed', habitId, title: habit.title });
+        }
       }
-    }
 
-    // Parse progress (synced regex)
-    const progressPattern = /\[\[ACTION:log_progress\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/gi;
-    while ((match = progressPattern.exec(aiOutput)) !== null) {
-      const habitId = match[1].trim();
-      const value = parseFloat(match[2].trim());
-      const habit = habits.find((h) => String(h._id) === habitId);
-      
-      if (habit && !isNaN(value)) {
-        const existing = await HabitLog.findOne({ user: userId, habit: habitId, date: todayKey });
-        const currentProgress = existing ? existing.progress || 0 : 0;
-        const newProgress = Math.max(0, currentProgress + value);
-        const isDone = newProgress >= (habit.targetValue || 1);
+      const progressMatch = /\[\[ACTION:log_progress\s*\|\s*([^|]+)\s*\|\s*([^\]]+)\]\]/i.exec(tag);
+      if (progressMatch) {
+        const habitId = progressMatch[1].trim();
+        const value = parseFloat(progressMatch[2].trim());
+        const habit = habits.find((h) => String(h._id) === habitId);
+        if (habit && !isNaN(value)) {
+          const existing = await HabitLog.findOne({ user: userId, habit: habitId, date: todayKey });
+          const currentProgress = existing ? existing.progress || 0 : 0;
+          const newProgress = Math.max(0, currentProgress + value);
+          const isDone = newProgress >= (habit.targetValue || 1);
 
-        await HabitLog.findOneAndUpdate(
-          { user: userId, habit: habitId, date: todayKey },
-          { user: userId, habit: habitId, date: todayKey, completed: isDone, skipped: false, progress: newProgress },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        detectedActions.push({ type: 'progress', habitId, title: habit.title, value });
+          await HabitLog.findOneAndUpdate(
+            { user: userId, habit: habitId, date: todayKey },
+            { user: userId, habit: habitId, date: todayKey, completed: isDone, skipped: false, progress: newProgress },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
+          detectedActions.push({ type: 'progress', habitId, title: habit.title, value });
+        }
       }
     }
 
     entry.detectedActions = detectedActions;
+    entry.psychology = aiResponse.psychology;
     await entry.save();
 
     res.status(200).json(entry);

@@ -13,6 +13,7 @@ const aiInsightsRoutes = require('./routes/aiInsightsRoutes');
 const templateRoutes = require('./routes/templateRoutes');
 const moodRoutes = require('./routes/moodRoutes');
 const journalRoutes = require('./routes/journalRoutes');
+const identityRoutes = require('./routes/identityRoutes');
 const { authMiddleware } = require('./middleware/auth');
 const { startAIWorker } = require('./workers/aiWorker');
 
@@ -20,7 +21,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const MONGODB_URI =
-  process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/nashid_habit_tracker';
+  process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/aura_habit_tracker';
 
 app.use(
   cors({
@@ -43,6 +44,7 @@ app.use('/api/ai', authMiddleware, aiInsightsRoutes);
 app.use('/api/templates', authMiddleware, templateRoutes);
 app.use('/api/mood', authMiddleware, moodRoutes);
 app.use('/api/journal', authMiddleware, journalRoutes);
+app.use('/api/identity', authMiddleware, identityRoutes);
 
 app.use((error, _request, response, _next) => {
   console.error(error);
@@ -53,7 +55,7 @@ app.use((error, _request, response, _next) => {
 
 async function startServer() {
   await connectDB(MONGODB_URI);
-  startAIWorker();
+  await startAIWorker();
 
   app.listen(PORT, () => {
     console.log(`Habit tracker API listening on port ${PORT}`);

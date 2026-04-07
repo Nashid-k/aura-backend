@@ -26,9 +26,9 @@ router.get('/', async (request, response) => {
     .sort({ createdAt: -1 })
     .lean();
   
-  // Fetch user data for tomorrowRisks
+  // Fetch user data for tomorrowRisks and keystone
   const User = require('../models/User');
-  const user = await User.findById(request.user._id).select('tomorrowRisks').lean();
+  const user = await User.findById(request.user._id).select('tomorrowRisks keystoneHabitId').lean();
 
   const logs = await HabitLog.find({
     user: request.user._id,
@@ -81,6 +81,7 @@ router.get('/', async (request, response) => {
       weeklyCompletion,
       longestStreak: strongestHabit?.streak.current || 0,
       strongestHabit: strongestHabit?.title || 'Start your first ritual',
+      keystoneHabit: habitCards.find(h => String(h._id) === String(user?.keystoneHabitId))
     },
     tomorrowRisks: user?.tomorrowRisks || { risks: [], shieldNudge: '' },
     habits: habitCards,

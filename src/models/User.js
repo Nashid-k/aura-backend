@@ -22,6 +22,19 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    pushSubscriptions: {
+      type: [Object],
+      default: [],
+    },
+    preferences: {
+      persona: { 
+        type: String, 
+        enum: ['maya', 'stoic', 'visionary', 'scientist'], 
+        default: 'maya' 
+      },
+      theme: { type: String, default: 'deep-space' }
+    },
+    keystoneHabitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Habit' },
     aiNudgeCache: {
       text: { type: String, default: '' },
       date: { type: String, default: '' },
@@ -36,6 +49,17 @@ const userSchema = new mongoose.Schema(
           reason: String,
         },
       ],
+    },
+    identity: {
+      archetype: { type: String, default: 'The Initiate' },
+      description: { type: String, default: 'A seeker stepping onto the path of intentional living.' },
+      level: { type: Number, default: 1 },
+      sigilParams: {
+        lines: { type: String, default: 'fluid', enum: ['fluid', 'angular', 'mixed'] },
+        complexity: { type: Number, default: 3, min: 1, max: 12 },
+        auraColor: { type: String, default: '#FDBA74' },
+        symmetry: { type: Number, default: 4, min: 3, max: 12 },
+      },
     },
   },
   { timestamps: true }

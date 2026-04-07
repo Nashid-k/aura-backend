@@ -26,6 +26,11 @@ const journalEntrySchema = new mongoose.Schema(
         value: Number,
       },
     ],
+    psychology: {
+      distortions: [String],
+      sentiment: String,
+      reframe: String,
+    },
   },
   { timestamps: true }
 );
