@@ -1,8 +1,8 @@
-const User = require('../models/User');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
-const JournalEntry = require('../models/JournalEntry');
-const MoodLog = require('../models/MoodLog');
+const User = require('../modules/auth/models/User');
+const Habit = require('../modules/habits/models/Habit');
+const HabitLog = require('../modules/logs/models/HabitLog');
+const JournalEntry = require('../modules/journal/models/JournalEntry');
+const MoodLog = require('../modules/mood/models/MoodLog');
 const { callGroq } = require('./aiClient');
 const dayjs = require('dayjs');
 

@@ -1,8 +1,8 @@
 const express = require('express');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
-const ChatMessage = require('../models/ChatMessage');
-const MoodLog = require('../models/MoodLog');
+const Habit = require('../habits/models/Habit');
+const HabitLog = require('../logs/models/HabitLog');
+const ChatMessage = require('./models/ChatMessage');
+const MoodLog = require('../mood/models/MoodLog');
 const { buildHabitStats } = require('../utils/stats');
 const { buildSystemPrompt, buildNudgePrompt } = require('../utils/aiUtils');
 const { buildInsights } = require('../utils/insights');
@@ -15,7 +15,7 @@ const { callGroq } = require('../utils/aiClient');
 
 const { getHabitContext } = require('../utils/aiContext');
 const { generateSoulfulRoutine } = require('../utils/routineService');
-const JournalEntry = require('../models/JournalEntry');
+const JournalEntry = require('../journal/models/JournalEntry');
 
 /**
  * POST /api/ai/routine
@@ -248,7 +248,7 @@ router.post('/chat', async (request, response) => {
 
   try {
     const userId = request.user._id;
-    const user = await require('../models/User').findById(userId).lean();
+    const user = await require('../auth/models/User').findById(userId).lean();
     const persona = user?.preferences?.persona || 'maya';
     
     const { habitCards, logs, summary, insights, moodContext } = await getHabitContext(userId);
@@ -335,7 +335,7 @@ router.delete('/history', async (request, response) => {
  */
 router.get('/nudge', async (request, response) => {
   try {
-    const user = await require('../models/User').findById(request.user._id).lean();
+    const user = await require('../auth/models/User').findById(request.user._id).lean();
     if (user.aiNudgeCache?.text && user.aiNudgeCache?.date === toDateKey(new Date())) {
       return response.json({ nudge: user.aiNudgeCache.text });
     }

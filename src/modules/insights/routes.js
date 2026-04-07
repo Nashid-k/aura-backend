@@ -1,7 +1,7 @@
 const express = require('express');
-const Achievement = require('../models/Achievement');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
+const Achievement = require('./models/Achievement');
+const Habit = require('../habits/models/Habit');
+const HabitLog = require('../logs/models/HabitLog');
 const { buildHabitStats } = require('../utils/stats');
 const { checkAndAward, BADGE_DEFS } = require('../utils/achievementService');
 const { buildInsights } = require('../utils/insights');

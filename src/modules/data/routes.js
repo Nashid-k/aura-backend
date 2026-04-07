@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
+const Habit = require('../habits/models/Habit');
+const HabitLog = require('../logs/models/HabitLog');
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
-const User = require('../models/User');
+const Habit = require('../modules/habits/models/Habit');
+const HabitLog = require('../modules/logs/models/HabitLog');
+const User = require('../modules/auth/models/User');
 const dayjs = require('dayjs');
 
 /**

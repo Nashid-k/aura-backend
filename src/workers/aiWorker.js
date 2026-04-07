@@ -1,5 +1,5 @@
 const { Queue, Worker, QueueEvents } = require('bullmq');
-const User = require('../models/User');
+const User = require('../modules/auth/models/User');
 const { getHabitContext } = require('../utils/aiContext');
 const { buildNudgePrompt } = require('../utils/aiUtils');
 const { toDateKey } = require('../utils/date');

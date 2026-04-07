@@ -1,6 +1,6 @@
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
-const MoodLog = require('../models/MoodLog');
+const Habit = require('../modules/habits/models/Habit');
+const HabitLog = require('../modules/logs/models/HabitLog');
+const MoodLog = require('../modules/mood/models/MoodLog');
 const { buildHabitStats } = require('./stats');
 const { buildInsights } = require('./insights');
 const { toDateKey } = require('./date');

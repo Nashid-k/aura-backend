@@ -1,10 +1,9 @@
 const express = require('express');
-const JournalEntry = require('../models/JournalEntry');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
-const { getHabitContext } = require('./groqRoutes'); // Reuse the context builder if exported, or rewrite locally.
+const JournalEntry = require('./models/JournalEntry');
+const Habit = require('../habits/models/Habit');
+const HabitLog = require('../logs/models/HabitLog');
+const { getHabitContext } = require('../utils/aiContext');
 const { toDateKey } = require('../utils/date');
-const { buildHabitStats } = require('../utils/stats');
 
 const router = express.Router();
 const { callGroq } = require('../utils/aiClient');
@@ -26,7 +25,7 @@ router.post('/', async (req, res) => {
   );
 
   // If no Groq or content is empty, just return
-  if (!groq || !content.trim()) {
+  if (!callGroq || !content.trim()) {
     return res.status(200).json(entry);
   }
 

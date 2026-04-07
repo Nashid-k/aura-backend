@@ -1,6 +1,6 @@
 const express = require('express');
-const HabitLog = require('../models/HabitLog');
-const Habit = require('../models/Habit');
+const HabitLog = require('./models/HabitLog');
+const Habit = require('../habits/models/Habit');
 const { buildHabitStats } = require('../utils/stats');
 const { checkAndAward } = require('../utils/achievementService');
 const { toDateKey } = require('../utils/date');

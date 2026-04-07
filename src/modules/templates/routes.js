@@ -1,6 +1,6 @@
 const express = require('express');
-const Habit = require('../models/Habit');
-const { TEMPLATES } = require('../data/templates');
+const Habit = require('../habits/models/Habit');
+const { TEMPLATES } = require('../../data/templates');
 
 const router = express.Router();
 

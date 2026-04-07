@@ -1,6 +1,6 @@
 const express = require('express');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
+const Habit = require('./models/Habit');
+const HabitLog = require('../logs/models/HabitLog');
 const {
   buildHabitStats,
   getHabitTimeline,

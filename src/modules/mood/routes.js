@@ -1,5 +1,5 @@
 const express = require('express');
-const MoodLog = require('../models/MoodLog');
+const MoodLog = require('./models/MoodLog');
 const { toDateKey } = require('../utils/date');
 
 const router = express.Router();

@@ -1,5 +1,5 @@
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
+const Habit = require('../modules/habits/models/Habit');
+const HabitLog = require('../modules/logs/models/HabitLog');
 const { toDateKey } = require('./date');
 const dayjs = require('dayjs');
 

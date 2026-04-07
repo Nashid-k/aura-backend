@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../modules/auth/models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'aura-local-secret';
 

@@ -3,8 +3,8 @@
  * Checks and awards badges after habit actions.
  */
 
-const Achievement = require('../models/Achievement');
-const Habit = require('../models/Habit');
+const Achievement = require('../modules/insights/models/Achievement');
+const Habit = require('../modules/habits/models/Habit');
 
 const BADGE_DEFS = {
   streak_7: { label: '7-Day Streak', emoji: '🔥', desc: 'Completed a habit 7 days in a row' },

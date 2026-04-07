@@ -1,6 +1,6 @@
 const express = require('express');
-const Habit = require('../models/Habit');
-const HabitLog = require('../models/HabitLog');
+const Habit = require('../habits/models/Habit');
+const HabitLog = require('../logs/models/HabitLog');
 const {
   buildHabitStats,
   getInsightLine,
@@ -27,7 +27,7 @@ router.get('/', async (request, response) => {
     .lean();
   
   // Fetch user data for tomorrowRisks and keystone
-  const User = require('../models/User');
+  const User = require('../auth/models/User');
   const user = await User.findById(request.user._id).select('tomorrowRisks keystoneHabitId').lean();
 
   const logs = await HabitLog.find({

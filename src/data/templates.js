@@ -1,268 +1,255 @@
 /**
  * Curated Habit Template Packs
+ * "The Best of the Best" - Top 20 Industry-Standard Routine Packs
  */
 
 const TEMPLATES = [
   {
-    id: 'morning-routine',
-    name: 'Morning Routine',
-    description: 'Start every day with intention and energy.',
+    id: 'morning-ritual',
+    name: 'The Morning Ritual',
+    description: 'A scientifically-backed sequence to own your morning and win the day.',
     emoji: '🌅',
     color: '#F97316',
     habits: [
-      { title: 'Wake Up Early', description: 'Rise before 7 AM', category: 'Personal', kind: 'build', icon: 'alarm' },
-      { title: 'Morning Meditation', description: '10 minutes of mindfulness', category: 'Wellness', kind: 'build', icon: 'self_improvement' },
-      { title: 'Exercise', description: '20-30 min workout', category: 'Fitness', kind: 'build', icon: 'fitness_center' },
-      { title: 'Healthy Breakfast', description: 'Fuel your body right', category: 'Wellness', kind: 'build', icon: 'restaurant' },
+      { title: 'Hydrate (500ml)', description: 'Drink water immediately to kickstart metabolism', category: 'Wellness', kind: 'build', icon: 'water_drop', targetValue: 500, targetMetric: 'ml' },
+      { title: 'Sunlight Exposure', description: '10-20 mins of natural light for circadian health', category: 'Wellness', kind: 'build', icon: 'wb_sunny', targetValue: 15, targetMetric: 'minutes' },
+      { title: 'Intention Setting', description: 'Journal your top 3 objectives for today', category: 'Personal', kind: 'build', icon: 'edit_note' },
+      { title: 'Movement', description: 'Light stretching or a 10-min walk', category: 'Fitness', kind: 'build', icon: 'directions_walk', targetValue: 10, targetMetric: 'minutes' }
     ],
   },
   {
-    id: 'fitness-starter',
-    name: 'Fitness Starter',
-    description: 'Build a solid fitness foundation.',
-    emoji: '💪',
-    color: '#EF4444',
+    id: 'deep-work-protocol',
+    name: 'Deep Work Protocol',
+    description: 'Based on Cal Newport\'s framework for high-intensity cognitive focus.',
+    emoji: '🧠',
+    color: '#6366F1',
     habits: [
-      { title: 'Daily Workout', description: '30 min workout session', category: 'Fitness', kind: 'build', icon: 'fitness_center', targetValue: 30, targetMetric: 'minutes' },
-      { title: 'Hydration Goal', description: 'Drink 8 glasses of water', category: 'Wellness', kind: 'build', icon: 'local_drink', targetValue: 8, targetMetric: 'glasses' },
-      { title: 'Stretching', description: '10 min morning stretch', category: 'Fitness', kind: 'build', icon: 'accessibility', targetValue: 10, targetMetric: 'minutes' },
+      { title: '90-Min Deep Session', description: 'Uninterrupted work on your hardest task', category: 'Career', kind: 'build', icon: 'psychology', targetValue: 90, targetMetric: 'minutes' },
+      { title: 'Phone in Airplane Mode', description: 'Eliminate digital distractions during deep blocks', category: 'Personal', kind: 'build', icon: 'airplanemode_active' },
+      { title: 'Inbox Zero (Batching)', description: 'Process emails only at scheduled times', category: 'Career', kind: 'build', icon: 'mail' },
+      { title: 'Shutdown Ritual', description: 'Formally close out the workday to prevent burnout', category: 'Career', kind: 'build', icon: 'power_settings_new' }
     ],
   },
   {
-    id: 'mindfulness',
-    name: 'Mindfulness & Calm',
-    description: 'Reduce stress and find inner peace.',
-    emoji: '🧘',
-    color: '#14B8A6',
-    habits: [
-      { title: 'Meditation', description: '15 minutes of guided meditation', category: 'Wellness', kind: 'build', icon: 'self_improvement', targetValue: 15, targetMetric: 'minutes' },
-      { title: 'Gratitude Journal', description: 'Write 3 things you\'re grateful for', category: 'Personal', kind: 'build', icon: 'menu_book', targetValue: 3, targetMetric: 'items' },
-      { title: 'Digital Detox', description: 'No screens 1 hour before bed', category: 'Personal', kind: 'quit', icon: 'phonelink_off', targetValue: 60, targetMetric: 'minutes' },
-    ],
-  },
-  {
-    id: 'atomic-habits',
-    name: 'Atomic Habits Starter',
-    description: 'Based on James Clear\'s best practices.',
+    id: 'atomic-consistency',
+    name: 'Atomic Consistency',
+    description: 'Master the principles of James Clear\'s Atomic Habits for identity-based change.',
     emoji: '⚛️',
     color: '#8B5CF6',
     habits: [
-      { title: '2-Minute Rule', description: 'Start any habit for just 2 minutes', category: 'Personal', kind: 'build', icon: 'timer', targetValue: 2, targetMetric: 'minutes' },
-      { title: 'Habit Stacking', description: 'Pair a new habit with an existing one', category: 'Personal', kind: 'build', icon: 'layers' },
-      { title: 'Environment Design', description: 'Make good habits obvious', category: 'Personal', kind: 'build', icon: 'design_services' },
+      { title: 'The 2-Minute Rule', description: 'Start any new habit for just 2 minutes today', category: 'Personal', kind: 'build', icon: 'timer', targetValue: 2, targetMetric: 'minutes' },
+      { title: 'Habit Stacking', description: 'Pair a new habit with an existing ritual', category: 'Personal', kind: 'build', icon: 'layers' },
+      { title: 'Environment Design', description: 'Prepare your space to make good habits obvious', category: 'Personal', kind: 'build', icon: 'design_services' },
+      { title: 'Never Miss Twice', description: 'If you miss a day, prioritize today at all costs', category: 'Personal', kind: 'build', icon: 'check_circle' }
     ],
   },
   {
-    id: 'academic-excellence',
-    name: 'Academic Excellence',
-    description: 'Stay on top of studies and self-care.',
-    emoji: '📚',
+    id: 'biohacker-blueprint',
+    name: 'Biohacker Blueprint',
+    description: 'Advanced physiological optimization based on Huberman & Sinclair.',
+    emoji: '🧬',
+    color: '#10B981',
+    habits: [
+      { title: 'Delay Caffeine', description: 'Wait 90-120 mins after waking to avoid crashes', category: 'Wellness', kind: 'build', icon: 'timer' },
+      { title: 'Cold Exposure', description: '2-min cold shower or ice bath for dopamine', category: 'Wellness', kind: 'build', icon: 'ac_unit', targetValue: 2, targetMetric: 'minutes' },
+      { title: 'Zone 2 Cardio', description: '45 mins of steady-state aerobic work', category: 'Fitness', kind: 'build', icon: 'favorite', targetValue: 45, targetMetric: 'minutes' },
+      { title: 'No Screens (1 Hr PM)', description: 'Block blue light 60 mins before sleep', category: 'Wellness', kind: 'quit', icon: 'phonelink_off', targetValue: 60, targetMetric: 'minutes' }
+    ],
+  },
+  {
+    id: 'sleep-sanctuary',
+    name: 'Sleep Sanctuary',
+    description: 'Optimize your recovery and wake up feeling superhuman.',
+    emoji: '🌙',
+    color: '#4F46E5',
+    habits: [
+      { title: 'Consistency (Time)', description: 'Go to bed at the exact same time daily', category: 'Wellness', kind: 'build', icon: 'bedtime' },
+      { title: 'Cool Room Temp', description: 'Set thermostat to 65°F (18°C) for deep sleep', category: 'Wellness', kind: 'build', icon: 'thermostat' },
+      { title: 'Magnesium/Supps', description: 'Take your evening recovery supplements', category: 'Wellness', kind: 'build', icon: 'medication' },
+      { title: 'Total Darkness', description: 'Ensure zero light leaks in the bedroom', category: 'Wellness', kind: 'build', icon: 'dark_mode' }
+    ],
+  },
+  {
+    id: 'financial-freedom',
+    name: 'Financial Freedom',
+    description: 'Simple, daily habits to build long-term wealth and awareness.',
+    emoji: '💰',
+    color: '#059669',
+    habits: [
+      { title: 'Log All Expenses', description: 'Track every transaction, no matter how small', category: 'Finance', kind: 'build', icon: 'receipt' },
+      { title: 'No-Spend Day', description: 'Avoid all non-essential discretionary spending', category: 'Finance', kind: 'build', icon: 'money_off' },
+      { title: 'Market/News Review', description: '10 mins of financial literacy or news', category: 'Finance', kind: 'build', icon: 'trending_up', targetValue: 10, targetMetric: 'minutes' }
+    ],
+  },
+  {
+    id: 'mental-resilience',
+    name: 'Mental Resilience',
+    description: 'Stoic and modern psychological tools for a stable mind.',
+    emoji: '🏛️',
+    color: '#71717A',
+    habits: [
+      { title: 'Premeditatio Malorum', description: 'Morning prep: Visualize handling obstacles', category: 'Personal', kind: 'build', icon: 'psychology' },
+      { title: 'Amor Fati Practice', description: 'Love your fate, reframe a negative', category: 'Personal', kind: 'build', icon: 'favorite' },
+      { title: 'Evening Inventory', description: 'Reflect: What did I do well? What can I improve?', category: 'Personal', kind: 'build', icon: 'history_edu' }
+    ],
+  },
+  {
+    id: 'fitness-forge',
+    name: 'The Fitness Forge',
+    description: 'A balanced approach to strength, mobility, and stamina.',
+    emoji: '🏋️',
+    color: '#EF4444',
+    habits: [
+      { title: 'Strength Training', description: 'Push, Pull, or Leg session', category: 'Fitness', kind: 'build', icon: 'fitness_center', targetValue: 45, targetMetric: 'minutes' },
+      { title: 'Steps (10k)', description: 'Total daily step count target', category: 'Fitness', kind: 'build', icon: 'directions_walk', targetValue: 10000, targetMetric: 'steps' },
+      { title: 'Daily Mobility', description: 'Address tight areas (hips, shoulders, spine)', category: 'Fitness', kind: 'build', icon: 'accessibility_new', targetValue: 15, targetMetric: 'minutes' }
+    ],
+  },
+  {
+    id: 'creative-catalyst',
+    name: 'Creative Catalyst',
+    description: 'Build a ritual around your art and creative output.',
+    emoji: '🎨',
+    color: '#D946EF',
+    habits: [
+      { title: 'Morning Pages', description: '3 pages of stream-of-consciousness writing', category: 'Creative', kind: 'build', icon: 'auto_stories', targetValue: 3, targetMetric: 'pages' },
+      { title: 'Core Creation', description: '1 hour of focused work on your primary art', category: 'Creative', kind: 'build', icon: 'brush', targetValue: 60, targetMetric: 'minutes' },
+      { title: 'Consumption Limit', description: 'Consume less social media than you create art', category: 'Personal', kind: 'quit', icon: 'visibility_off' }
+    ],
+  },
+  {
+    id: 'social-architect',
+    name: 'Social Architect',
+    description: 'Nurture your network and build meaningful connections.',
+    emoji: '🤝',
     color: '#3B82F6',
     habits: [
-      { title: 'Study Session', description: '1 hour of focused study', category: 'Learning', kind: 'build', icon: 'school', targetValue: 60, targetMetric: 'minutes' },
-      { title: 'Reading', description: 'Read 20 pages daily', category: 'Learning', kind: 'build', icon: 'menu_book', targetValue: 20, targetMetric: 'pages' },
-      { title: 'Review Notes', description: 'Revise today\'s class notes', category: 'Learning', kind: 'build', icon: 'note', targetValue: 15, targetMetric: 'minutes' },
-      { title: 'Sleep by 11 PM', description: 'Consistent sleep schedule', category: 'Wellness', kind: 'build', icon: 'bedtime' },
+      { title: 'Reach Out (1 Person)', description: 'Text or call a friend or professional contact', category: 'Personal', kind: 'build', icon: 'chat' },
+      { title: 'Public Gratitude', description: 'Compliment or thank someone publicly/digitally', category: 'Personal', kind: 'build', icon: 'thumb_up' },
+      { title: 'Quality Time', description: '30 mins of presence with a loved one', category: 'Personal', kind: 'build', icon: 'diversity_3', targetValue: 30, targetMetric: 'minutes' }
     ],
   },
   {
     id: 'digital-minimalism',
     name: 'Digital Minimalism',
-    description: 'Reclaim your attention and time from screens.',
+    description: 'Reclaim your attention from the attention economy.',
     emoji: '📵',
-    color: '#EC4899',
+    color: '#64748B',
     habits: [
-      { title: 'No Social Media', description: 'Avoid scrolling social feeds', category: 'Personal', kind: 'quit', icon: 'phonelink_off', targetValue: 1, targetMetric: 'session' },
-      { title: 'Read a Book Instead', description: 'Replace screen time with reading', category: 'Learning', kind: 'build', icon: 'menu_book', targetValue: 15, targetMetric: 'pages' },
-      { title: 'Outdoor Walk', description: '20 min walk without phone', category: 'Wellness', kind: 'build', icon: 'directions_walk', targetValue: 20, targetMetric: 'minutes' },
+      { title: 'No Screens (First Hour)', description: 'Protect your mind from early information overload', category: 'Personal', kind: 'quit', icon: 'smartphone' },
+      { title: 'App Limits', description: 'Stay under your social media time targets', category: 'Personal', kind: 'quit', icon: 'timer', targetValue: 30, targetMetric: 'minutes' },
+      { title: 'Manual Search Only', description: 'Avoid clicking on "recommended" or "feeds"', category: 'Personal', kind: 'build', icon: 'search' }
+    ],
+  },
+  {
+    id: 'academic-mastery',
+    name: 'Academic Mastery',
+    description: 'Optimized learning for students and lifelong learners.',
+    emoji: '🎓',
+    color: '#8B5CF6',
+    habits: [
+      { title: 'Active Recall Session', description: 'Test yourself on today\'s class material', category: 'Learning', kind: 'build', icon: 'quiz', targetValue: 20, targetMetric: 'minutes' },
+      { title: 'Deep Study Block', description: '60 mins of Pomodoro-based study', category: 'Learning', kind: 'build', icon: 'school', targetValue: 60, targetMetric: 'minutes' },
+      { title: 'Read (20 Pages)', description: 'Consistent progress through your syllabus', category: 'Learning', kind: 'build', icon: 'menu_book', targetValue: 20, targetMetric: 'pages' }
+    ],
+  },
+  {
+    id: 'polyglot-path',
+    name: 'Polyglot Path',
+    description: 'The ritual for mastering any language through immersion.',
+    emoji: '🌍',
+    color: '#0EA5E9',
+    habits: [
+      { title: 'Spaced Repetition (Anki)', description: 'Review your flashcard deck daily', category: 'Learning', kind: 'build', icon: 'style', targetValue: 15, targetMetric: 'minutes' },
+      { title: 'Active Listening', description: 'Podcast or video in your target language', category: 'Learning', kind: 'build', icon: 'hearing', targetValue: 20, targetMetric: 'minutes' },
+      { title: 'Shadowing Practice', description: 'Speak aloud alongside native speakers', category: 'Learning', kind: 'build', icon: 'record_voice_over', targetValue: 10, targetMetric: 'minutes' }
+    ],
+  },
+  {
+    id: 'clean-fuel',
+    name: 'Clean Fuel',
+    description: 'Master your nutrition with simple, high-impact rules.',
+    emoji: '🥗',
+    color: '#84CC16',
+    habits: [
+      { title: 'Macros Check', description: 'Log your protein and calorie targets', category: 'Wellness', kind: 'build', icon: 'calculate' },
+      { title: 'No Refined Sugar', description: 'Avoid sweets and sweetened beverages', category: 'Wellness', kind: 'quit', icon: 'cake' },
+      { title: 'Home-Cooked Only', description: 'Eat meals prepared at home today', category: 'Wellness', kind: 'build', icon: 'soup_kitchen' }
+    ],
+  },
+  {
+    id: 'code-zen',
+    name: 'Code Zen',
+    description: 'Fuel your evolution as a software engineer.',
+    emoji: '💻',
+    color: '#1E293B',
+    habits: [
+      { title: '#100DaysOfCode Block', description: '1 hour of coding on a personal project', category: 'Career', kind: 'build', icon: 'terminal', targetValue: 60, targetMetric: 'minutes' },
+      { title: 'Documentation Read', description: 'Read 1 chapter of official docs or a book', category: 'Learning', kind: 'build', icon: 'article', targetValue: 15, targetMetric: 'minutes' },
+      { title: 'Git Commit', description: 'Push a meaningful change to your repository', category: 'Career', kind: 'build', icon: 'commit' }
+    ],
+  },
+  {
+    id: 'home-sanctuary',
+    name: 'Home Sanctuary',
+    description: 'Maintain a space that supports your mental clarity.',
+    emoji: '🏠',
+    color: '#A855F7',
+    habits: [
+      { title: 'Make the Bed', description: 'The first win of the day', category: 'Personal', kind: 'build', icon: 'bed' },
+      { title: 'Dishes Zero', description: 'Clean the sink before sleeping', category: 'Personal', kind: 'build', icon: 'wash' },
+      { title: '15-Min Tidy', description: 'Quick sprint to organize one room', category: 'Personal', kind: 'build', icon: 'cleaning_services', targetValue: 15, targetMetric: 'minutes' }
+    ],
+  },
+  {
+    id: 'eco-warrior',
+    name: 'Eco-Warrior',
+    description: 'Daily rituals to reduce your carbon footprint.',
+    emoji: '🌿',
+    color: '#16A34A',
+    habits: [
+      { title: 'No Single-Use Plastic', description: 'Carry your bottle, bag, and cutlery', category: 'Wellness', kind: 'build', icon: 'recycling' },
+      { title: 'Plant-Based Day', description: 'Zero animal products for today', category: 'Wellness', kind: 'build', icon: 'eco' },
+      { title: 'Energy Audit', description: 'Turn off all unused lights/electronics', category: 'Personal', kind: 'build', icon: 'power' }
+    ],
+  },
+  {
+    id: 'the-5am-club',
+    name: 'The 5 AM Club',
+    description: 'The 20/20/20 formula for extreme productivity.',
+    emoji: '🕰️',
+    color: '#F59E0B',
+    habits: [
+      { title: 'Wake at 5:00 AM', description: 'Own the morning before the world wakes', category: 'Personal', kind: 'build', icon: 'alarm' },
+      { title: 'Move (Sweat)', description: '20 mins of intense exercise', category: 'Fitness', kind: 'build', icon: 'fitness_center', targetValue: 20, targetMetric: 'minutes' },
+      { title: 'Reflect (Journal)', description: '20 mins of solitude and journaling', category: 'Personal', kind: 'build', icon: 'self_improvement', targetValue: 20, targetMetric: 'minutes' },
+      { title: 'Grow (Learn)', description: '20 mins of reading or skill-building', category: 'Learning', kind: 'build', icon: 'school', targetValue: 20, targetMetric: 'minutes' }
     ],
   },
   {
     id: 'seventy-five-hard',
     name: '75 Hard Inspired',
-    description: 'Mental toughness and discipline challenge.',
+    description: 'A mental toughness program for discipline.',
     emoji: '🔥',
     color: '#DC2626',
     habits: [
-      { title: 'Diet Compliance', description: 'Follow your diet, zero cheat meals', category: 'Wellness', kind: 'build', icon: 'restaurant' },
-      { title: 'Workout 1 (Outdoor)', description: '45 mins outdoor training', category: 'Fitness', kind: 'build', icon: 'directions_run', targetValue: 45, targetMetric: 'minutes' },
-      { title: 'Workout 2', description: '45 mins second training session', category: 'Fitness', kind: 'build', icon: 'fitness_center', targetValue: 45, targetMetric: 'minutes' },
-      { title: 'Gallon of Water', description: 'Drink 1 gallon of water today', category: 'Wellness', kind: 'build', icon: 'local_drink' },
-      { title: 'Read 10 Pages', description: 'Non-fiction self-development', category: 'Learning', kind: 'build', icon: 'menu_book', targetValue: 10, targetMetric: 'pages' },
-      { title: 'Progress Pic', description: 'Take a daily progress photo', category: 'Personal', kind: 'build', icon: 'photo_camera' }
-    ]
+      { title: 'Follow a Diet', description: 'Zero cheat meals or alcohol', category: 'Wellness', kind: 'build', icon: 'restaurant' },
+      { title: 'Two 45-Min Workouts', description: 'One MUST be outdoors', category: 'Fitness', kind: 'build', icon: 'directions_run', targetValue: 90, targetMetric: 'minutes' },
+      { title: 'Gallon of Water', description: 'Hydrate to the maximum', category: 'Wellness', kind: 'build', icon: 'local_drink' },
+      { title: 'Read (10 Pages)', description: 'Non-fiction only', category: 'Learning', kind: 'build', icon: 'menu_book', targetValue: 10, targetMetric: 'pages' }
+    ],
   },
   {
-    id: 'deep-work',
-    name: 'Deep Work Protocol',
-    description: 'Cal Newport inspired focus routines.',
-    emoji: '🧠',
-    color: '#6366F1',
-    habits: [
-      { title: 'Deep Work Block', description: '90 mins of uninterrupted work', category: 'Career', kind: 'build', icon: 'psychology', targetValue: 90, targetMetric: 'minutes' },
-      { title: 'Inbox Zero', description: 'Process emails to zero at end of day', category: 'Career', kind: 'build', icon: 'mail' },
-      { title: 'Shutdown Ritual', description: 'Formally close out the workday', category: 'Career', kind: 'build', icon: 'power_settings_new' }
-    ]
-  },
-  {
-    id: 'five-am-club',
-    name: 'The 5 AM Club',
-    description: 'Own your morning, elevate your life (20/20/20 formula).',
-    emoji: '🕰️',
-    color: '#F59E0B',
-    habits: [
-      { title: 'Wake at 5 AM', description: 'Rise immediately, no snooze', category: 'Personal', kind: 'build', icon: 'alarm' },
-      { title: 'Move (20 min)', description: 'Intense exercise to sweat', category: 'Fitness', kind: 'build', icon: 'fitness_center', targetValue: 20, targetMetric: 'minutes' },
-      { title: 'Reflect (20 min)', description: 'Journal, meditate, or pray', category: 'Wellness', kind: 'build', icon: 'self_improvement', targetValue: 20, targetMetric: 'minutes' },
-      { title: 'Grow (20 min)', description: 'Read or listen to a podcast', category: 'Learning', kind: 'build', icon: 'headphones', targetValue: 20, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'sleep-hygiene',
-    name: 'Sleep Sanctuary',
-    description: 'Optimize your rest and recovery.',
-    emoji: '🌙',
-    color: '#4F46E5',
-    habits: [
-      { title: 'No Caffeine After 2 PM', description: 'Avoid afternoon stimulants', category: 'Wellness', kind: 'quit', icon: 'local_cafe' },
-      { title: 'Dim Lights', description: 'Lower lights 2 hours before bed', category: 'Wellness', kind: 'build', icon: 'lightbulb' },
-      { title: 'Cool Room', description: 'Set temperature to ~65°F/18°C', category: 'Wellness', kind: 'build', icon: 'ac_unit' },
-      { title: '8 Hours in Bed', description: 'Dedicate 8 hours to rest', category: 'Wellness', kind: 'build', icon: 'bed', targetValue: 8, targetMetric: 'hours' }
-    ]
-  },
-  {
-    id: 'financial-fitness',
-    name: 'Financial Fitness',
-    description: 'Take control of your wealth and spending.',
-    emoji: '💰',
-    color: '#10B981',
-    habits: [
-      { title: 'Log Expenses', description: 'Track every dollar spent today', category: 'Finance', kind: 'build', icon: 'receipt' },
-      { title: 'No Spend Day', description: 'Zero non-essential purchases', category: 'Finance', kind: 'build', icon: 'money_off' },
-      { title: 'Review Budget', description: '5 min daily budget check-in', category: 'Finance', kind: 'build', icon: 'account_balance_wallet', targetValue: 5, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'stoic-daily',
-    name: 'Daily Stoic',
-    description: 'Ancient philosophy for modern resilience.',
-    emoji: '🏛️',
-    color: '#71717A',
-    habits: [
-      { title: 'Morning Preparation', description: 'Anticipate the day\'s challenges', category: 'Personal', kind: 'build', icon: 'wb_sunny' },
-      { title: 'Amor Fati', description: 'Love your fate, reframe a negative', category: 'Personal', kind: 'build', icon: 'favorite' },
-      { title: 'Evening Reflection', description: 'Review your actions honestly', category: 'Personal', kind: 'build', icon: 'nights_stay' }
-    ]
-  },
-  {
-    id: 'developer-100-days',
-    name: '#100DaysOfCode',
-    description: 'Consistency challenge for software developers.',
-    emoji: '💻',
-    color: '#0EA5E9',
-    habits: [
-      { title: 'Code for 1 Hour', description: 'Write code for at least an hour', category: 'Career', kind: 'build', icon: 'code', targetValue: 60, targetMetric: 'minutes' },
-      { title: 'Commit to GitHub', description: 'Push progress to a repository', category: 'Career', kind: 'build', icon: 'publish' },
-      { title: 'Share Progress', description: 'Post your daily update publicly', category: 'Career', kind: 'build', icon: 'share' }
-    ]
-  },
-  {
-    id: 'huberman-protocol',
-    name: 'Biohacker Blueprint',
-    description: 'Science-based protocols for optimization.',
-    emoji: '🧬',
-    color: '#059669',
-    habits: [
-      { title: 'Morning Sunlight', description: '10-30 mins of sun in eyes early', category: 'Wellness', kind: 'build', icon: 'wb_twilight', targetValue: 15, targetMetric: 'minutes' },
-      { title: 'Delay Caffeine', description: 'Wait 90-120 mins after waking', category: 'Wellness', kind: 'build', icon: 'timer' },
-      { title: 'Zone 2 Cardio', description: 'Steady state cardiovascular work', category: 'Fitness', kind: 'build', icon: 'favorite_border', targetValue: 45, targetMetric: 'minutes' },
-      { title: 'Cold Exposure', description: '1-3 min cold shower or plunge', category: 'Wellness', kind: 'build', icon: 'ac_unit', targetValue: 2, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'writers-block',
-    name: 'The Writer\'s Way',
-    description: 'Break through creative resistance.',
-    emoji: '✍️',
-    color: '#D946EF',
-    habits: [
-      { title: 'Morning Pages', description: '3 pages of stream of consciousness', category: 'Creative', kind: 'build', icon: 'auto_stories', targetValue: 3, targetMetric: 'pages' },
-      { title: 'Write 500 Words', description: 'Drafting your core project', category: 'Creative', kind: 'build', icon: 'edit', targetValue: 500, targetMetric: 'words' },
-      { title: 'Read Poetry/Prose', description: '15 mins of high-quality reading', category: 'Learning', kind: 'build', icon: 'menu_book', targetValue: 15, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'language-immersion',
-    name: 'Language Immersion',
-    description: 'Master a new tongue through daily practice.',
-    emoji: '🌍',
-    color: '#14B8A6',
-    habits: [
-      { title: 'Vocab Flashcards', description: 'Review Anki or Duolingo', category: 'Learning', kind: 'build', icon: 'style', targetValue: 15, targetMetric: 'minutes' },
-      { title: 'Listen to Target Language', description: 'Podcast or music in target language', category: 'Learning', kind: 'build', icon: 'hearing', targetValue: 20, targetMetric: 'minutes' },
-      { title: 'Speak Aloud', description: 'Practice speaking or shadowing', category: 'Learning', kind: 'build', icon: 'record_voice_over', targetValue: 10, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'home-sanctuary',
-    name: 'Home Sanctuary',
-    description: 'Keep your living space clean and peaceful.',
-    emoji: '🧹',
-    color: '#8B5CF6',
-    habits: [
-      { title: 'Make the Bed', description: 'Immediately upon waking', category: 'Personal', kind: 'build', icon: 'bed' },
-      { title: '15-Min Tidy', description: 'Quick decluttering session', category: 'Personal', kind: 'build', icon: 'cleaning_services', targetValue: 15, targetMetric: 'minutes' },
-      { title: 'Dishes Zero', description: 'No dishes left in the sink overnight', category: 'Personal', kind: 'build', icon: 'wash' }
-    ]
-  },
-  {
-    id: 'eat-the-frog',
-    name: 'Eat The Frog',
-    description: 'Tackle the hardest things first.',
-    emoji: '🐸',
-    color: '#84CC16',
-    habits: [
-      { title: 'Identify The Frog', description: 'Pick the #1 most impactful task', category: 'Career', kind: 'build', icon: 'ads_click' },
-      { title: 'Tackle It First', description: 'Work on it before checking email', category: 'Career', kind: 'build', icon: 'done_all' },
-      { title: 'Time Block (Pomodoro)', description: 'Use a 25-min timer for focus', category: 'Career', kind: 'build', icon: 'timer', targetValue: 25, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'dopamine-reset',
-    name: 'Dopamine Reset',
-    description: 'Recalibrate your brain\'s reward system.',
+    id: 'dopamine-detox',
+    name: 'Dopamine Detox',
+    description: 'Reset your reward system and find joy in the mundane.',
     emoji: '🔌',
-    color: '#64748B',
+    color: '#475569',
     habits: [
-      { title: 'No Sugar/Junk Food', description: 'Eat only whole foods today', category: 'Wellness', kind: 'quit', icon: 'fastfood' },
-      { title: 'No Porn/Adult Content', description: 'Avoid highly stimulating media', category: 'Personal', kind: 'quit', icon: 'block' },
-      { title: 'No Video Games', description: 'Replace gaming with creation', category: 'Personal', kind: 'quit', icon: 'videogame_asset_off' },
-      { title: 'Boredom Allowance', description: 'Sit and do nothing for 10 mins', category: 'Wellness', kind: 'build', icon: 'hourglass_empty', targetValue: 10, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'relationship-builder',
-    name: 'Relationship Builder',
-    description: 'Nurture your connections and empathy.',
-    emoji: '🤝',
-    color: '#F43F5E',
-    habits: [
-      { title: 'Reach Out', description: 'Text or call a friend/family member', category: 'Personal', kind: 'build', icon: 'contact_phone' },
-      { title: 'Compliment Someone', description: 'Give a genuine compliment', category: 'Personal', kind: 'build', icon: 'thumb_up' },
-      { title: 'Quality Time', description: 'Undivided attention with loved one', category: 'Personal', kind: 'build', icon: 'diversity_1', targetValue: 30, targetMetric: 'minutes' }
-    ]
-  },
-  {
-    id: 'clean-eating',
-    name: 'Clean Eating Protocol',
-    description: 'Fuel your body with whole foods.',
-    emoji: '🥗',
-    color: '#22C55E',
-    habits: [
-      { title: 'Eat 5 Veggies/Fruits', description: 'Hit your daily micronutrients', category: 'Wellness', kind: 'build', icon: 'eco', targetValue: 5, targetMetric: 'servings' },
-      { title: 'No Added Sugar', description: 'Avoid refined sugars', category: 'Wellness', kind: 'quit', icon: 'cake' },
-      { title: 'Home Cooked Meal', description: 'Prepare at least one meal yourself', category: 'Wellness', kind: 'build', icon: 'soup_kitchen' }
-    ]
+      { title: 'No Junk Information', description: 'Zero social media, news, or videos', category: 'Personal', kind: 'quit', icon: 'block' },
+      { title: 'No Processed Food', description: 'Whole foods only', category: 'Wellness', kind: 'quit', icon: 'fastfood' },
+      { title: 'Boredom Allowance', description: '10 mins of sitting with no input', category: 'Wellness', kind: 'build', icon: 'hourglass_empty', targetValue: 10, targetMetric: 'minutes' }
+    ],
   }
 ];
 
