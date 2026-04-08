@@ -22,8 +22,8 @@ try {
   });
 
   redis.on('error', (err) => {
-    // Suppress noise but keep it logged
-    // console.log('[Maya Cache] Connection error (suppressed for fallback)');
+    // Silently handle error to prevent process crash or log spam
+    // Fallback logic is already handled by retryStrategy and null checks in functions
   });
 } catch (err) {
   console.warn('[Maya Cache] Initialization failed. Cache disabled.');
