@@ -1,5 +1,5 @@
 const express = require('express');
-const { calculateIdentity } = require('../utils/identityService');
+const { calculateIdentity } = require('../../utils/identityService');
 
 const router = express.Router();
 

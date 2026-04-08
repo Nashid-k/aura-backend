@@ -5,9 +5,9 @@ const {
   buildHabitStats,
   getHabitTimeline,
   getHabitWeeklySeries,
-} = require('../utils/stats');
-const { toDateKey } = require('../utils/date');
-const { cacheGet, cacheSet, cacheDel } = require('../utils/redis');
+} = require('../../utils/stats');
+const { toDateKey } = require('../../utils/date');
+const { cacheGet, cacheSet, cacheDel } = require('../../utils/redis');
 
 const router = express.Router();
 

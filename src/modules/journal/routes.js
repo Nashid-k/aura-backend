@@ -2,11 +2,11 @@ const express = require('express');
 const JournalEntry = require('./models/JournalEntry');
 const Habit = require('../habits/models/Habit');
 const HabitLog = require('../logs/models/HabitLog');
-const { getHabitContext } = require('../utils/aiContext');
-const { toDateKey } = require('../utils/date');
+const { getHabitContext } = require('../../utils/aiContext');
+const { toDateKey } = require('../../utils/date');
 
 const router = express.Router();
-const { callGroq } = require('../utils/aiClient');
+const { callGroq } = require('../../utils/aiClient');
 
 router.get('/', async (req, res) => {
   const entries = await JournalEntry.find({ user: req.user._id }).sort({ date: -1 }).limit(30).lean();

@@ -7,10 +7,10 @@ const {
   getMonthlyHeatmap,
   getWeeklySeries,
   sortLeaderboard,
-} = require('../utils/stats');
-const { generateWeeklyReflection } = require('../utils/aiUtils');
-const { toDateKey } = require('../utils/date');
-const { cacheGet, cacheSet } = require('../utils/redis');
+} = require('../../utils/stats');
+const { generateWeeklyReflection } = require('../../utils/aiUtils');
+const { toDateKey } = require('../../utils/date');
+const { cacheGet, cacheSet } = require('../../utils/redis');
 
 const router = express.Router();
 

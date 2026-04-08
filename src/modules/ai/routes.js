@@ -3,18 +3,18 @@ const Habit = require('../habits/models/Habit');
 const HabitLog = require('../logs/models/HabitLog');
 const ChatMessage = require('./models/ChatMessage');
 const MoodLog = require('../mood/models/MoodLog');
-const { buildHabitStats } = require('../utils/stats');
-const { buildSystemPrompt, buildNudgePrompt } = require('../utils/aiUtils');
-const { buildInsights } = require('../utils/insights');
-const { toDateKey } = require('../utils/date');
-const { cacheDel } = require('../utils/redis');
+const { buildHabitStats } = require('../../utils/stats');
+const { buildSystemPrompt, buildNudgePrompt } = require('../../utils/aiUtils');
+const { buildInsights } = require('../../utils/insights');
+const { toDateKey } = require('../../utils/date');
+const { cacheDel } = require('../../utils/redis');
 
 const router = express.Router();
 
-const { callGroq } = require('../utils/aiClient');
+const { callGroq } = require('../../utils/aiClient');
 
-const { getHabitContext } = require('../utils/aiContext');
-const { generateSoulfulRoutine } = require('../utils/routineService');
+const { getHabitContext } = require('../../utils/aiContext');
+const { generateSoulfulRoutine } = require('../../utils/routineService');
 const JournalEntry = require('../journal/models/JournalEntry');
 
 /**
