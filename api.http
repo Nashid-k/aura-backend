@@ -1,0 +1,21 @@
+### Aura Clean Architecture REST API Spec
+@baseUrl = http://localhost:5000/api
+
+### 1. API Health check
+GET {{baseUrl}}/health
+
+### 2. Retrieve Items
+GET {{baseUrl}}/items
+
+### 3. Create Domain Item
+POST {{baseUrl}}/items
+Content-Type: application/json
+
+{
+  "title": "Aura Domain Entity",
+  "description": "Entity description validating DDD rules",
+  "status": "active"
+}
+
+### 4. Retrieve Specific Item
+GET {{baseUrl}}/items/123
