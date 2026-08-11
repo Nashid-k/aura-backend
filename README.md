@@ -1,49 +1,61 @@
-# Aura Server (Backend)
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--                     NASHID K  —  AURA BACKEND                      -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
 
-The backend of Aura is a Node.js and Express API, structured using **Clean Architecture** and **Domain-Driven Design (DDD)**.
+# 🧱 Aura Server — DDD & Clean Architecture API
 
-## 📂 Domain-Driven Design Structure
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-20.x-green?style=flat-square&logo=nodedotjs" alt="Node" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/Express-4.x-lightgrey?style=flat-square&logo=express" alt="Express" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/Architecture-DDD%20%7C%20Clean-blue?style=flat-square" alt="Architecture" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/MongoDB-Mongoose-green?style=flat-square&logo=mongodb" alt="MongoDB" />
+</p>
+
+<p align="center">
+  <strong>A cleanly structured Node.js / Express API written using Domain-Driven Design (DDD) and Clean Architecture principles.</strong>
+</p>
+
+---
+
+## 📌 Project Overview
+Aura Server is structured to separate concern layers strictly. By isolating domain business rules from databases and HTTP routing layers, the codebase is easily maintainable and highly extensible.
+
+### ✨ Architectural Layers
+*   **Domain Layer:** Core entities, value objects, and business rules, completely independent of external packages.
+*   **Use Case Layer:** Orchestrates business actions and user interactions.
+*   **Infrastructure Layer:** Express routers, database models, file utilities, and API configurations.
+
+---
+
+## 📂 Directory Structure
 
 ```text
 src/
-├── app.js         # Express app configuration & middleware
-├── server.js      # Server entry point
-├── config/        # Environment and infrastructure setup
-├── core/          # Shared domain logic (Errors, Logger)
-└── modules/       # Domain-specific modules
-    ├── habits/    # Controllers, Services, Models, DTOs
-    ├── auth/      # Controllers, Services, Models, DTOs
-    └── users/     # Controllers, Services, Models, DTOs
+├── domain/       # Core business entities
+├── use-cases/    # Application logic operations
+├── infrastructure/ # Express controllers, MongoDB models, configurations
+├── app.js        # Express middleware and system handlers
+└── server.js     # Entry point
 ```
 
-## 🛠️ Tech Stack
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Database:** MongoDB (via Mongoose)
-- **Background Jobs/Cache:** BullMQ + Redis
-- **AI Integration:** Groq SDK
+---
 
-## 🚀 Scripts
-
-- `npm run dev`: Starts the server with Nodemon for hot-reloading.
-- `npm start`: Starts the server in production mode.
-- `npm run build`: Placeholder script for cloud deployments (e.g., Render).
-
-## 🔑 Environment Variables
-| Variable | Description |
-|---|---|
-| `PORT` | Server port (default: 5000) |
-| `MONGODB_URI` | MongoDB connection string |
-| `REDIS_URL` | Redis connection string |
-| `GROQ_API_KEY_PRIMARY` | Primary API key for Groq AI |
-| `GROQ_API_KEY_SECONDARY`| Fallback API key for Groq AI |
-| `JWT_SECRET` | Secret key for signing JWTs |
-| `VAPID_PUBLIC_KEY` | VAPID public key for Web Push |
-| `VAPID_PRIVATE_KEY`| VAPID private key for Web Push |
-
-## 👷 Background Workers
-Aura uses BullMQ for background tasks such as:
-- Daily AI Nudge generation.
-- Morning Push Notifications.
-- Habit evolution tracking and keystone discovery.
-These are defined and initialized in `src/workers/`.
+## ⚙️ Development Setup
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/Nashid-k/aura-backend.git
+   cd aura-backend
+   ```
+2. **Install Packages:**
+   ```bash
+   npm install
+   ```
+3. **Configure Environment:**
+   Set values in `.env.example` and copy to `.env`.
+4. **Boot Server:**
+   ```bash
+   npm run start
+   ```
